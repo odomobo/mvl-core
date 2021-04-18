@@ -1,43 +1,50 @@
 #include "pch.h"
 
-mvl_obj* false_obj;
-mvl_obj* true_obj;
-
-void bool_init()
+void bool_register(mvl_i* inst)
 {
-    mvl.type_register(core_Bool_token, bool_registration);
-
-    auto val_false = new int{ 0 };
-    auto val_true = new int{ 1 };
-    false_obj = mvl.object_create(core_Bool_token, val_false);
-    true_obj = mvl.object_create(core_Bool_token, val_true);
+    MVL->STACKFRAME_PUSH(inst);
+    MVL->type_register(inst, tokens::core_Bool, bool_registration);
+    MVL->stackframe_pop(inst);
 }
 
-// new(int* data_bool, ...)
-mvl_obj* bool_new(void* a, void* b, void* c, void* d)
+// self.new(int* data_bool, ...)
+void bool_new(mvl_i* inst, mvl_obj* self, void* a, void* b, void* c, void* d)
 {
+    MVL->STACKFRAME_PUSH(inst);
     auto val = *static_cast<int*>(a);
-    if (val == 0)
-        return false_obj;
-    else
-        return true_obj;
+    if (val != 0)
+        val = 1;
+
+    int* data = nullptr;
+    try {
+        data = new int{ val };
+    } catch (std::bad_alloc&) {
+        error_memory(inst); // terminates the application
+    }
+
+    MVL->object_setDataPointer(inst, self, data);
+    MVL->stackframe_pop(inst);
 }
 
-void bool_free(mvl_obj* obj)
+void bool_free(mvl_i* inst, mvl_obj* self)
 {
-    auto data = static_cast<int*>(mvl.object_getDataPointer(obj));
+    MVL->STACKFRAME_PUSH(inst);
+    auto data = static_cast<int*>(MVL->object_getDataPointer(inst, self));
     delete data;
+    MVL->stackframe_pop(inst);
 }
 
-// getNativeData(mvl_obj* bool, int* val_out,...);
-void bool_getNativeData(mvl_obj* obj, void* a, void* b, void* c, void* d)
+// self.getNativeData(int* bool_out,...);
+void bool_getNativeData(mvl_i* inst, mvl_obj* self, void* a, void* b, void* c, void* d)
 {
+    MVL->STACKFRAME_PUSH(inst);
     auto a_int = static_cast<int*>(a);
-    auto val = *static_cast<int*>(mvl.object_getDataPointer(obj));
+    auto val = *static_cast<int*>(MVL->object_getDataPointer(inst, self));
     *a_int = val;
+    MVL->stackframe_pop(inst);
 }
 
-mvl_type_register_callbacks bool_registration = {
+mvl_type_register_callbacks const bool_registration = {
     bool_new,
     bool_free,
     bool_getNativeData,

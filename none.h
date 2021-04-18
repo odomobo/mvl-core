@@ -1,8 +1,6 @@
 #pragma once
 #include "mvl_library.h"
 
-extern mvl_obj* none_obj;
+void none_register(mvl_i* inst);
 
-void none_init();
-
-extern mvl_type_register_callbacks none_registration;
+extern mvl_type_register_callbacks const none_registration;

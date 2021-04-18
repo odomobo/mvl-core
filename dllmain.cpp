@@ -1,44 +1,50 @@
 // dllmain.cpp : Defines the entry point for the DLL application.
 #include "pch.h"
 
-mvl_library_api mvl;
+std::atomic<mvl_library_api*> mvl_api_ptr;
 
-static void register_and_init()
+static void register_types(mvl_i* inst)
 {
-    none_init();
-    bool_init();
-    double_init();
-    string_init();
-    list_init();
-    nativeFunction_init();
+    MVL->STACKFRAME_PUSH(inst);
+    none_register(inst);
+    bool_register(inst);
+    double_register(inst);
+    string_register(inst);
+    list_register(inst);
+    nativeFunction_register(inst);
+    MVL->stackframe_pop(inst);
 }
 
-static void set_globals()
+static void register_methods(mvl_i* inst)
 {
+    MVL->STACKFRAME_PUSH(inst);
+    throw std::exception("not yet implemented");
+    MVL->stackframe_pop(inst);
+}
+
+static void set_globals(mvl_i* inst)
+{
+    MVL->STACKFRAME_PUSH(inst);
+    // nativeFunction_set_global_new_method();
+
     throw std::exception("not implemented");
+    MVL->stackframe_pop(inst);
 }
 
-void load(mvl_library_api* mvl_api)
+void load(mvl_i* inst, mvl_library_api* mvl_api)
 {
-    mvl = *mvl_api;
+    MVL->STACKFRAME_PUSH(inst);
+    mvl_api_ptr = mvl_api;
 
-    register_and_init();
-    set_globals();
+    tokens::init(inst);
+    register_types(inst);
+    register_methods(inst);
+    set_globals(inst);
+    MVL->stackframe_pop(inst);
 }
 
-int get_references(mvl_obj*** references_out)
+void error_memory(mvl_i* inst)
 {
-    size_t const length = 3;
-    *references_out = static_cast<mvl_obj**>(calloc(length, sizeof(mvl_obj*)));
-    if (*references_out == nullptr)
-    {
-        mvl.error_memory(); // terminates the application
-        return 0;
-    }
-
-    *references_out[0] = none_obj;
-    *references_out[1] = true_obj;
-    *references_out[2] = false_obj;
-
-    return length;
+    MVL->error_memory(inst);
+    throw std::exception{}; // should not be reached
 }

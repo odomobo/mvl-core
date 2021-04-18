@@ -1,30 +1,29 @@
 #include "pch.h"
 
-mvl_obj* none_obj;
-
-void none_init()
+void none_register(mvl_i* inst)
 {
-    mvl.type_register(core_None_token, none_registration);
-    none_obj = mvl.object_create(core_None_token, nullptr);
+    MVL->STACKFRAME_PUSH(inst);
+    MVL->type_register(inst, tokens::core_None, none_registration);
+    MVL->stackframe_pop(inst);
 }
 
-mvl_obj* none_new(void* a, void* b, void* c, void* d)
+void none_new(mvl_i* inst, mvl_obj* self, void* a, void* b, void* c, void* d)
 {
-    return none_obj;
+    // no native data to set
 }
 
-void none_free(mvl_obj* obj)
+void none_free(mvl_i* inst, mvl_obj* self)
 {
     // no native data to free
 }
 
-void none_getNativeData(mvl_obj* obj, void* a, void* b, void* c, void* d)
+void none_getNativeData(mvl_i* inst, mvl_obj* self, void* a, void* b, void* c, void* d)
 {
     // no native data to get
 }
 
 
-mvl_type_register_callbacks none_registration = {
+mvl_type_register_callbacks const none_registration = {
     none_new,
     none_free,
     none_getNativeData,

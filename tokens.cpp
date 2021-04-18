@@ -1,18 +1,23 @@
 #include "pch.h"
 
-token core_None_token;
-token core_Bool_token;
-token core_Double_token;
-token core_String_token;
-token core_List_token;
-token core_NativeFunction_token;
-
-void init_tokens()
+namespace tokens
 {
-    core_None_token = mvl.token_get("core.None");
-    core_Bool_token = mvl.token_get("core.Bool");
-    core_Double_token = mvl.token_get("core.Double");
-    core_String_token = mvl.token_get("core.String");
-    core_List_token = mvl.token_get("core.List");
-    core_NativeFunction_token = mvl.token_get("core.NativeFunction");
+    token core_None;
+    token core_Bool;
+    token core_Double;
+    token core_String;
+    token core_List;
+    token core_NativeFunction;
+
+    void init(mvl_i* inst)
+    {
+        MVL->STACKFRAME_PUSH(inst);
+        core_None = MVL->token_get(inst, "core.None");
+        core_Bool = MVL->token_get(inst, "core.Bool");
+        core_Double = MVL->token_get(inst, "core.Double");
+        core_String = MVL->token_get(inst, "core.String");
+        core_List = MVL->token_get(inst, "core.List");
+        core_NativeFunction = MVL->token_get(inst, "core.NativeFunction");
+        MVL->stackframe_pop(inst);
+    }
 }

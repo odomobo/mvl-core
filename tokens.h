@@ -1,11 +1,14 @@
 #pragma once
 #include "mvl_library.h"
 
-extern token core_None_token;
-extern token core_Bool_token;
-extern token core_Double_token;
-extern token core_String_token;
-extern token core_List_token;
-extern token core_NativeFunction_token;
+namespace tokens
+{
+    extern token core_None;
+    extern token core_Bool;
+    extern token core_Double;
+    extern token core_String;
+    extern token core_List;
+    extern token core_NativeFunction;
 
-void init_tokens();
+    void init(mvl_i* inst);
+}

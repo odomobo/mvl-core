@@ -1,6 +1,6 @@
 #pragma once
 #include "mvl_library.h"
 
-void string_init();
+void string_register(mvl_i* inst);
 
-extern mvl_type_register_callbacks string_registration;
+extern mvl_type_register_callbacks const string_registration;
