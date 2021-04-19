@@ -9,7 +9,8 @@
 
 // add headers that you want to pre-compile here
 #include "mvl_library.h"
-#include "framework.h"
+#include "dllmain.h"
+#include "util.h"
 #include "tokens.h"
 #include "none.h"
 #include "bool.h"

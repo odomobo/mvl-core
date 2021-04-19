@@ -1,14 +1,11 @@
 #include "pch.h"
 
-void double_register(mvl_i* inst)
-{
-    MVL->STACKFRAME_PUSH(inst);
-    MVL->type_register(inst, tokens::core_Double, double_registration);
-    MVL->stackframe_pop(inst);
-}
+////////////////////
+// Type Functions //
+////////////////////
 
 // self.new(double* data, ...)
-void double_new(mvl_i* inst, mvl_obj* self, void* a, void* b, void* c, void* d)
+void CALL_CONVENTION double_new(mvl_i* inst, mvl_obj* self, void* a, void* b, void* c, void* d)
 {
     MVL->STACKFRAME_PUSH(inst);
     auto val = *static_cast<double*>(a);
@@ -24,7 +21,15 @@ void double_new(mvl_i* inst, mvl_obj* self, void* a, void* b, void* c, void* d)
     MVL->stackframe_pop(inst);
 }
 
-void double_free(mvl_i* inst, mvl_obj* self)
+mvl_obj* double_new_internal(mvl_i* inst, double val)
+{
+    MVL->STACKFRAME_PUSH(inst);
+    auto ret = MVL->object_new(inst, tokens::core_Double, &val, nullptr, nullptr, nullptr);
+    MVL->stackframe_pop(inst);
+    return ret;
+}
+
+void CALL_CONVENTION double_free(mvl_i* inst, mvl_obj* self)
 {
     MVL->STACKFRAME_PUSH(inst);
     auto data = static_cast<double*>(MVL->object_getDataPointer(inst, self));
@@ -33,7 +38,7 @@ void double_free(mvl_i* inst, mvl_obj* self)
 }
 
 // self.getNativeData(double* val_out,...);
-void double_getNativeData(mvl_i* inst, mvl_obj* self, void* a, void* b, void* c, void* d)
+void CALL_CONVENTION double_getNativeData(mvl_i* inst, mvl_obj* self, void* a, void* b, void* c, void* d)
 {
     MVL->STACKFRAME_PUSH(inst);
     auto a_double = static_cast<double*>(a);
@@ -48,3 +53,27 @@ mvl_type_register_callbacks const double_registration = {
     double_getNativeData,
     nullptr
 };
+
+//////////////////////
+// Method Functions //
+//////////////////////
+
+
+
+////////////////////////////
+//      Registration      //
+////////////////////////////
+
+void double_register_type(mvl_i* inst)
+{
+    MVL->STACKFRAME_PUSH(inst);
+    MVL->type_register(inst, tokens::core_Double, double_registration);
+    MVL->stackframe_pop(inst);
+}
+
+void double_register_nativeFunctions(mvl_i* inst)
+{
+    MVL->STACKFRAME_PUSH(inst);
+    // TODO
+    MVL->stackframe_pop(inst);
+}

@@ -1,14 +1,11 @@
 #include "pch.h"
 
-void bool_register(mvl_i* inst)
-{
-    MVL->STACKFRAME_PUSH(inst);
-    MVL->type_register(inst, tokens::core_Bool, bool_registration);
-    MVL->stackframe_pop(inst);
-}
+////////////////////
+// Type Functions //
+////////////////////
 
 // self.new(int* data_bool, ...)
-void bool_new(mvl_i* inst, mvl_obj* self, void* a, void* b, void* c, void* d)
+void CALL_CONVENTION bool_new(mvl_i* inst, mvl_obj* self, void* a, void* b, void* c, void* d)
 {
     MVL->STACKFRAME_PUSH(inst);
     auto val = *static_cast<int*>(a);
@@ -26,7 +23,15 @@ void bool_new(mvl_i* inst, mvl_obj* self, void* a, void* b, void* c, void* d)
     MVL->stackframe_pop(inst);
 }
 
-void bool_free(mvl_i* inst, mvl_obj* self)
+mvl_obj* bool_new_internal(mvl_i* inst, bool val)
+{
+    MVL->STACKFRAME_PUSH(inst);
+    auto ret = MVL->object_new(inst, tokens::core_Bool, &val, nullptr, nullptr, nullptr);
+    MVL->stackframe_pop(inst);
+    return ret;
+}
+
+void CALL_CONVENTION bool_free(mvl_i* inst, mvl_obj* self)
 {
     MVL->STACKFRAME_PUSH(inst);
     auto data = static_cast<int*>(MVL->object_getDataPointer(inst, self));
@@ -35,7 +40,7 @@ void bool_free(mvl_i* inst, mvl_obj* self)
 }
 
 // self.getNativeData(int* bool_out,...);
-void bool_getNativeData(mvl_i* inst, mvl_obj* self, void* a, void* b, void* c, void* d)
+void CALL_CONVENTION bool_getNativeData(mvl_i* inst, mvl_obj* self, void* a, void* b, void* c, void* d)
 {
     MVL->STACKFRAME_PUSH(inst);
     auto a_int = static_cast<int*>(a);
@@ -50,3 +55,27 @@ mvl_type_register_callbacks const bool_registration = {
     bool_getNativeData,
     nullptr
 };
+
+//////////////////////
+// Method Functions //
+//////////////////////
+
+
+
+////////////////////////////
+//      Registration      //
+////////////////////////////
+
+void bool_register_type(mvl_i* inst)
+{
+    MVL->STACKFRAME_PUSH(inst);
+    MVL->type_register(inst, tokens::core_Bool, bool_registration);
+    MVL->stackframe_pop(inst);
+}
+
+void bool_register_nativeFunctions(mvl_i* inst)
+{
+    MVL->STACKFRAME_PUSH(inst);
+    // TODO
+    MVL->stackframe_pop(inst);
+}

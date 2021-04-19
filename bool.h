@@ -1,6 +1,7 @@
 #pragma once
 #include "mvl_library.h"
 
-void bool_register(mvl_i* inst);
+mvl_obj* bool_new_internal(mvl_i* inst, bool val);
 
-extern mvl_type_register_callbacks const bool_registration;
+void bool_register_type(mvl_i* inst);
+void bool_register_nativeFunctions(mvl_i* inst);

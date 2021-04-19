@@ -75,14 +75,14 @@ struct mvl_type_register_callbacks {
 };
 typedef struct mvl_type_register_callbacks mvl_type_register_callbacks;
 
-typedef mvl_obj* (CALL_CONVENTION* mvl_nativeFunction_callback)(mvl_i* inst, mvl_obj* obj);
+typedef mvl_obj*(CALL_CONVENTION* mvl_nativeFunction_t)(mvl_i* inst, mvl_obj* list);
 
 ///////////////////////////////
 // General Library Functions //
 ///////////////////////////////
 
 // Uses a reference to function_sig, so it should not be modified or freed until the matching mvl_stackframe_pop.
-typedef void    (CALL_CONVENTION* mvl_stackframe_push_t)(mvl_i* inst, char const* function_sig, char const* file, int line);
+typedef void    (CALL_CONVENTION* mvl_stackframe_push_t)(mvl_i* inst, char const* function_name, char const* file, int line);
 typedef void    (CALL_CONVENTION* mvl_stackframe_pop_t)(mvl_i* inst);
 // Causes a stack trace to be printed.
 typedef void    (CALL_CONVENTION* mvl_error_t)(mvl_i* inst, char const* error_message);
@@ -96,6 +96,14 @@ typedef token   (CALL_CONVENTION* mvl_typeof_t)(mvl_i* inst, mvl_obj* obj);
 typedef void    (CALL_CONVENTION* mvl_import_t)(mvl_i* inst, char const* library);
 typedef void    (CALL_CONVENTION* mvl_script_run_t)(mvl_i* inst, char const* script_name, char const* source);
 typedef void    (CALL_CONVENTION* mvl_gc_run_t)(mvl_i* inst);
+
+///////////////////////////////////////
+// Function- & Method-Call Functions //
+///////////////////////////////////////
+
+typedef mvl_obj*(CALL_CONVENTION* mvl_function_callOnObject_t)(mvl_i* inst, mvl_obj* func, mvl_obj* args);
+typedef mvl_obj*(CALL_CONVENTION* mvl_function_callByGlobalIdentifier_t)(mvl_i* inst, token identifier, mvl_obj* args);
+typedef mvl_obj*(CALL_CONVENTION* mvl_method_call_t)(mvl_i* inst, mvl_obj* object, token method, mvl_obj* args);
 
 ///////////////////////////////////
 // Global Manipulation Functions //
@@ -118,10 +126,8 @@ typedef mvl_obj*(CALL_CONVENTION* mvl_object_new_t)(mvl_i* inst, token type_name
 // Used to get native data from an object. You should check that the object has the right type before trying to get its data.
 // Can be called across libraries.
 typedef void    (CALL_CONVENTION* mvl_object_getNativeData_t)(mvl_i* inst, token type_name, mvl_obj* obj, void* a, void* b, void* c, void* d);
-typedef void    (CALL_CONVENTION* mvl_nativeFunction_register_t)(mvl_i* inst, token library_function, mvl_nativeFunction_callback function_callback);
-typedef mvl_obj*(CALL_CONVENTION* mvl_nativeFunction_call_t)(mvl_i* inst, token library_function, mvl_obj* list);
-
-typedef mvl_obj*(CALL_CONVENTION* mvl_nativeFunction_t)(mvl_i* inst, mvl_obj* list);
+typedef void    (CALL_CONVENTION* mvl_nativeFunction_register_t)(mvl_i* inst, token library_function_identifier, mvl_nativeFunction_t function_callback);
+typedef mvl_obj*(CALL_CONVENTION* mvl_nativeFunction_call_t)(mvl_i* inst, token library_function_identifier, mvl_obj* args);
 
 ///////////////////////
 // Type Registration //
@@ -150,6 +156,9 @@ struct mvl_library_api
     mvl_import_t                          import;
     mvl_script_run_t                      script_run;
     mvl_gc_run_t                          gc_run;
+    mvl_function_callOnObject_t           function_callOnObject;
+    mvl_function_callByGlobalIdentifier_t function_callByIdentifier;
+    mvl_method_call_t                     method_call;
     mvl_global_get_t                      global_get;
     mvl_global_set_t                      global_set;
     mvl_global_unset_t                    global_unset;
@@ -162,7 +171,7 @@ struct mvl_library_api
     mvl_type_register_t                   type_register;
     mvl_object_getDataPointer_t           object_getDataPointer;
     mvl_object_setDataPointer_t           object_setDataPointer;
-    mvl_object_getTypename_token_t       object_getTypename_token;
+    mvl_object_getTypename_token_t        object_getTypename_token;
 };
 typedef struct mvl_library_api mvl_library_api;
 

@@ -10,11 +10,11 @@
 
 #include <vector>
 #include <atomic>
+#include <array>
+#include <exception>
+#include <string>
+#include <cstring>
 
 extern std::atomic<mvl_library_api*> mvl_api_ptr;
-#define MVL mvl_api_ptr.load()
-
-#define STACKFRAME_PUSH(inst) stackframe_push(inst, __func__, __FILE__, __LINE__)
 
 void load(mvl_i* inst, mvl_library_api* mvl_api);
-void error_memory(mvl_i* inst);

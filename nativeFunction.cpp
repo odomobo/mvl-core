@@ -1,5 +1,9 @@
 #include "pch.h"
 
+////////////////////
+// Type Functions //
+////////////////////
+
 struct NativeFunction
 {
     token nativeFunction_token;
@@ -8,15 +12,8 @@ struct NativeFunction
     mvl_obj* help_text;
 };
 
-void nativeFunction_register(mvl_i* inst)
-{
-    MVL->STACKFRAME_PUSH(inst);
-    MVL->type_register(inst, tokens::core_NativeFunction, nativeFunction_registration);
-    MVL->stackframe_pop(inst);
-}
-
 // self.new(token* nativeFunction_token, mvl_nativeFunction_t* nativeFunction_fp, mvl_obj* signature, mvl_obj* help_text)
-void nativeFunction_new(mvl_i* inst, mvl_obj* self, void* a, void* b, void* c, void* d)
+void CALL_CONVENTION nativeFunction_new(mvl_i* inst, mvl_obj* self, void* a, void* b, void* c, void* d)
 {
     MVL->STACKFRAME_PUSH(inst);
     auto nativeFunction_token = *static_cast<token*>(a);
@@ -35,7 +32,27 @@ void nativeFunction_new(mvl_i* inst, mvl_obj* self, void* a, void* b, void* c, v
     MVL->stackframe_pop(inst);
 }
 
-void nativeFunction_free(mvl_i* inst, mvl_obj* self)
+mvl_obj* nativeFunction_new_internal(mvl_i* inst, token nativeFunction_token, mvl_nativeFunction_t nativeFunction_fp, char const* signature, char const* help_text)
+{
+    MVL->STACKFRAME_PUSH(inst);
+    mvl_obj* signature_obj;
+    if (signature == nullptr)
+        signature_obj = none_new_internal(inst);
+    else
+        signature_obj = STRING_NEW_INTERNAL_BORROW(inst, signature);
+
+    mvl_obj* help_text_obj;
+    if (help_text == nullptr)
+        help_text_obj = none_new_internal(inst);
+    else
+        help_text_obj = STRING_NEW_INTERNAL_BORROW(inst, help_text);
+
+    auto ret = MVL->object_new(inst, tokens::core_NativeFunction, &nativeFunction_token, &nativeFunction_fp, signature_obj, help_text_obj);
+    MVL->stackframe_pop(inst);
+    return ret;
+}
+
+void CALL_CONVENTION nativeFunction_free(mvl_i* inst, mvl_obj* self)
 {
     MVL->STACKFRAME_PUSH(inst);
     auto data = static_cast<NativeFunction*>(MVL->object_getDataPointer(inst, self));
@@ -44,7 +61,7 @@ void nativeFunction_free(mvl_i* inst, mvl_obj* self)
 }
 
 // self.getNativeData(mvl_nativeFunction_t* nativeFunction_out, ...);
-void nativeFunction_getNativeData(mvl_i* inst, mvl_obj* self, void* a, void* b, void* c, void* d)
+void CALL_CONVENTION nativeFunction_getNativeData(mvl_i* inst, mvl_obj* self, void* a, void* b, void* c, void* d)
 {
     MVL->STACKFRAME_PUSH(inst);
     NativeFunction* dataPointer = static_cast<NativeFunction*>(MVL->object_getDataPointer(inst, self));
@@ -54,7 +71,7 @@ void nativeFunction_getNativeData(mvl_i* inst, mvl_obj* self, void* a, void* b, 
     MVL->stackframe_pop(inst);
 }
 
-size_t nativeFunction_getReferences(mvl_i* inst, mvl_obj* self, mvl_obj*** references_out)
+size_t CALL_CONVENTION nativeFunction_getReferences(mvl_i* inst, mvl_obj* self, mvl_obj*** references_out)
 {
     MVL->STACKFRAME_PUSH(inst);
     NativeFunction* dataPointer = static_cast<NativeFunction*>(MVL->object_getDataPointer(inst, self));
@@ -77,3 +94,27 @@ mvl_type_register_callbacks const nativeFunction_registration = {
     nativeFunction_getNativeData,
     nativeFunction_getReferences
 };
+
+//////////////////////
+// Method Functions //
+//////////////////////
+
+
+
+////////////////////////////
+//      Registration      //
+////////////////////////////
+
+void CALL_CONVENTION nativeFunction_register_type(mvl_i* inst)
+{
+    MVL->STACKFRAME_PUSH(inst);
+    MVL->type_register(inst, tokens::core_NativeFunction, nativeFunction_registration);
+    MVL->stackframe_pop(inst);
+}
+
+void nativeFunction_register_nativeFunctions(mvl_i* inst)
+{
+    MVL->STACKFRAME_PUSH(inst);
+    // TODO
+    MVL->stackframe_pop(inst);
+}
