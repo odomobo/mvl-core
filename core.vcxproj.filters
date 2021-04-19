@@ -21,9 +21,6 @@
     <ClInclude Include="mvl_library.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="tokens.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="none.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -46,6 +43,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="dllmain.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tokens.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

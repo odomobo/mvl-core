@@ -26,7 +26,7 @@ void CALL_CONVENTION bool_new(mvl_i* inst, mvl_obj* self, void* a, void* b, void
 mvl_obj* bool_new_internal(mvl_i* inst, bool val)
 {
     MVL->STACKFRAME_PUSH(inst);
-    auto ret = MVL->object_new(inst, tokens::core_Bool, &val, nullptr, nullptr, nullptr);
+    auto ret = MVL->object_new(inst, TOKENS[inst].core_Bool, &val, nullptr, nullptr, nullptr);
     MVL->stackframe_pop(inst);
     return ret;
 }
@@ -69,7 +69,7 @@ mvl_type_register_callbacks const bool_registration = {
 void bool_register_type(mvl_i* inst)
 {
     MVL->STACKFRAME_PUSH(inst);
-    MVL->type_register(inst, tokens::core_Bool, bool_registration);
+    MVL->type_register(inst, TOKENS[inst].core_Bool, bool_registration);
     MVL->stackframe_pop(inst);
 }
 

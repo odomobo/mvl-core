@@ -94,7 +94,7 @@ mvl_obj* string_new_internal_copy(mvl_i* inst, std::string& str)
     auto c_str_const = str.c_str();
     auto c_str = const_cast<char*>(c_str_const); // I promise we won't touch your precious chars
     int copy_mode = 0; // copy
-    auto ret = MVL->object_new(inst, tokens::core_String, c_str, &length, &copy_mode, nullptr);
+    auto ret = MVL->object_new(inst, TOKENS[inst].core_String, c_str, &length, &copy_mode, nullptr);
     MVL->stackframe_pop(inst);
     return ret;
 }
@@ -103,7 +103,7 @@ mvl_obj* string_new_internal_copy(mvl_i* inst, char const* str_const)
 {
     MVL->STACKFRAME_PUSH(inst);
     auto c_str = const_cast<char*>(str_const); // I promise we won't touch your precious chars
-    auto ret = MVL->object_new(inst, tokens::core_String, c_str, nullptr, nullptr, nullptr);
+    auto ret = MVL->object_new(inst, TOKENS[inst].core_String, c_str, nullptr, nullptr, nullptr);
     MVL->stackframe_pop(inst);
     return ret;
 }
@@ -113,7 +113,7 @@ mvl_obj* string_new_internal_borrow(mvl_i* inst, char const* str_const, size_t l
     MVL->STACKFRAME_PUSH(inst);
     auto str = const_cast<char*>(str_const); // I promise we won't touch your precious chars
     int copy_mode = 1; // borrow
-    auto ret = MVL->object_new(inst, tokens::core_String, str, &length, &copy_mode, nullptr);
+    auto ret = MVL->object_new(inst, TOKENS[inst].core_String, str, &length, &copy_mode, nullptr);
     MVL->stackframe_pop(inst);
     return ret;
 }
@@ -122,7 +122,7 @@ mvl_obj* string_new_internal_take(mvl_i* inst, char* str, size_t length)
 {
     MVL->STACKFRAME_PUSH(inst);
     int copy_mode = 2; // take
-    auto ret = MVL->object_new(inst, tokens::core_String, str, &length, &copy_mode, nullptr);
+    auto ret = MVL->object_new(inst, TOKENS[inst].core_String, str, &length, &copy_mode, nullptr);
     MVL->stackframe_pop(inst);
     return ret;
 }
@@ -172,7 +172,7 @@ mvl_type_register_callbacks const string_registration = {
 void string_register_type(mvl_i* inst)
 {
     MVL->STACKFRAME_PUSH(inst);
-    MVL->type_register(inst, tokens::core_String, string_registration);
+    MVL->type_register(inst, TOKENS[inst].core_String, string_registration);
     MVL->stackframe_pop(inst);
 }
 

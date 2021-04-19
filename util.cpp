@@ -12,7 +12,7 @@ void verify_0_args(mvl_i* inst, mvl_obj* list)
     MVL->STACKFRAME_PUSH(inst);
 
 #ifdef _DEBUG
-    if (MVL->object_getTypename_token(inst, list) != tokens::core_List)
+    if (MVL->object_getTypename_token(inst, list) != TOKENS[inst].core_List)
     {
         MVL->error(inst, "Function parameter list was not a list!");
         return;
@@ -34,10 +34,10 @@ mvl_obj* extract_1_args(mvl_i* inst, mvl_obj* list)
     MVL->STACKFRAME_PUSH(inst);
 
 #ifdef _DEBUG
-    if (MVL->object_getTypename_token(inst, list) != tokens::core_List)
+    if (MVL->object_getTypename_token(inst, list) != TOKENS[inst].core_List)
     {
         MVL->error(inst, "Function parameter list was not a list!");
-        return;
+        return nullptr;
     }
 #endif
 
@@ -59,10 +59,10 @@ std::array<mvl_obj*, 2> extract_2_args(mvl_i* inst, mvl_obj* list)
     MVL->STACKFRAME_PUSH(inst);
 
 #ifdef _DEBUG
-    if (MVL->object_getTypename_token(inst, list) != tokens::core_List)
+    if (MVL->object_getTypename_token(inst, list) != TOKENS[inst].core_List)
     {
         MVL->error(inst, "Function parameter list was not a list!");
-        return;
+        return { nullptr, };
     }
 #endif
 
@@ -85,10 +85,10 @@ std::array<mvl_obj*, 3> extract_3_args(mvl_i* inst, mvl_obj* list)
     MVL->STACKFRAME_PUSH(inst);
 
 #ifdef _DEBUG
-    if (MVL->object_getTypename_token(inst, list) != tokens::core_List)
+    if (MVL->object_getTypename_token(inst, list) != TOKENS[inst].core_List)
     {
         MVL->error(inst, "Function parameter list was not a list!");
-        return;
+        return { nullptr, };
     }
 #endif
 

@@ -1,18 +1,24 @@
 #pragma once
 #include "mvl_library.h"
+#include <atomic>
+#include <map>
+#include <mutex>
 
-namespace tokens
+struct TokensStruct
 {
-    extern token core_None;
-    extern token core_None_str;
-    extern token core_None_equals;
-    extern token core_None_hash;
+    token core_None;
+    token core_None_str;
+    token core_None_equals;
+    token core_None_hash;
 
-    extern token core_Bool;
-    extern token core_Double;
-    extern token core_String;
-    extern token core_List;
-    extern token core_NativeFunction;
+    token core_Bool;
+    token core_Double;
+    token core_String;
+    token core_List;
+    token core_NativeFunction;
+};
 
-    void init(mvl_i* inst);
-}
+extern std::atomic<std::map<mvl_i*, TokensStruct>*> tokens;
+#define TOKENS (*tokens.load())
+
+void tokens_init(mvl_i* inst);

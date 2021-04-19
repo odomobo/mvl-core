@@ -45,7 +45,7 @@ mvl_obj* list_new_internal(mvl_i* inst, std::vector<mvl_obj*> elements)
     MVL->STACKFRAME_PUSH(inst);
     auto list_data = elements.data();
     auto length = elements.size();
-    auto ret = MVL->object_new(inst, tokens::core_List, list_data, &length, nullptr, nullptr);
+    auto ret = MVL->object_new(inst, TOKENS[inst].core_List, list_data, &length, nullptr, nullptr);
     MVL->stackframe_pop(inst);
     return ret;
 }
@@ -128,7 +128,7 @@ mvl_obj* CALL_CONVENTION list_length(mvl_i* inst, mvl_obj* args)
     if (MVL->is_error(inst))
         return nullptr;
 
-    if (MVL->object_getTypename_token(inst, list) != tokens::core_List)
+    if (MVL->object_getTypename_token(inst, list) != TOKENS[inst].core_List)
     {
         MVL->error(inst, "args[0] is not a core.List");
         return nullptr;
@@ -148,7 +148,7 @@ mvl_obj* CALL_CONVENTION list_length(mvl_i* inst, mvl_obj* args)
 void list_register_type(mvl_i* inst)
 {
     MVL->STACKFRAME_PUSH(inst);
-    MVL->type_register(inst, tokens::core_List, list_registration);
+    MVL->type_register(inst, TOKENS[inst].core_List, list_registration);
     MVL->stackframe_pop(inst);
 }
 

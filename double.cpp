@@ -24,7 +24,7 @@ void CALL_CONVENTION double_new(mvl_i* inst, mvl_obj* self, void* a, void* b, vo
 mvl_obj* double_new_internal(mvl_i* inst, double val)
 {
     MVL->STACKFRAME_PUSH(inst);
-    auto ret = MVL->object_new(inst, tokens::core_Double, &val, nullptr, nullptr, nullptr);
+    auto ret = MVL->object_new(inst, TOKENS[inst].core_Double, &val, nullptr, nullptr, nullptr);
     MVL->stackframe_pop(inst);
     return ret;
 }
@@ -67,7 +67,7 @@ mvl_type_register_callbacks const double_registration = {
 void double_register_type(mvl_i* inst)
 {
     MVL->STACKFRAME_PUSH(inst);
-    MVL->type_register(inst, tokens::core_Double, double_registration);
+    MVL->type_register(inst, TOKENS[inst].core_Double, double_registration);
     MVL->stackframe_pop(inst);
 }
 

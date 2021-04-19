@@ -39,7 +39,7 @@ void load(mvl_i* inst, mvl_library_api* mvl_api)
     MVL->STACKFRAME_PUSH(inst);
     mvl_api_ptr = mvl_api;
 
-    tokens::init(inst);
+    tokens_init(inst);
     register_types(inst);
     register_nativeFunctions(inst);
     set_globals(inst);

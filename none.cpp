@@ -12,7 +12,7 @@ void CALL_CONVENTION none_new(mvl_i* inst, mvl_obj* self, void* a, void* b, void
 mvl_obj* none_new_internal(mvl_i* inst)
 {
     MVL->STACKFRAME_PUSH(inst);
-    auto ret = MVL->object_new(inst, tokens::core_None, nullptr, nullptr, nullptr, nullptr);
+    auto ret = MVL->object_new(inst, TOKENS[inst].core_None, nullptr, nullptr, nullptr, nullptr);
     MVL->stackframe_pop(inst);
     return ret;
 }
@@ -57,8 +57,8 @@ mvl_obj* CALL_CONVENTION none_equals(mvl_i* inst, mvl_obj* args)
     if (MVL->is_error(inst))
         return nullptr;
 
-    auto self_is_none = MVL->typeof(inst, self) == tokens::core_None;
-    auto other_is_none = MVL->typeof(inst, other) == tokens::core_None;
+    auto self_is_none = MVL->typeof(inst, self) == TOKENS[inst].core_None;
+    auto other_is_none = MVL->typeof(inst, other) == TOKENS[inst].core_None;
     auto equals = self_is_none && other_is_none;
 
     auto ret = bool_new_internal(inst, equals);
@@ -85,15 +85,15 @@ mvl_obj* CALL_CONVENTION none_hash(mvl_i* inst, mvl_obj* args)
 void none_register_type(mvl_i* inst)
 {
     MVL->STACKFRAME_PUSH(inst);
-    MVL->type_register(inst, tokens::core_None, none_registration);
+    MVL->type_register(inst, TOKENS[inst].core_None, none_registration);
     MVL->stackframe_pop(inst);
 }
 
 void none_register_nativeFunctions(mvl_i* inst)
 {
     MVL->STACKFRAME_PUSH(inst);
-    MVL->nativeFunction_register(inst, tokens::core_None_str, none_str);
-    MVL->nativeFunction_register(inst, tokens::core_None_equals, none_equals);
-    MVL->nativeFunction_register(inst, tokens::core_None_hash, none_hash);
+    MVL->nativeFunction_register(inst, TOKENS[inst].core_None_str, none_str);
+    MVL->nativeFunction_register(inst, TOKENS[inst].core_None_equals, none_equals);
+    MVL->nativeFunction_register(inst, TOKENS[inst].core_None_hash, none_hash);
     MVL->stackframe_pop(inst);
 }

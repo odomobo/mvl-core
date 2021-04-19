@@ -47,7 +47,7 @@ mvl_obj* nativeFunction_new_internal(mvl_i* inst, token nativeFunction_token, mv
     else
         help_text_obj = STRING_NEW_INTERNAL_BORROW(inst, help_text);
 
-    auto ret = MVL->object_new(inst, tokens::core_NativeFunction, &nativeFunction_token, &nativeFunction_fp, signature_obj, help_text_obj);
+    auto ret = MVL->object_new(inst, TOKENS[inst].core_NativeFunction, &nativeFunction_token, &nativeFunction_fp, signature_obj, help_text_obj);
     MVL->stackframe_pop(inst);
     return ret;
 }
@@ -108,7 +108,7 @@ mvl_type_register_callbacks const nativeFunction_registration = {
 void CALL_CONVENTION nativeFunction_register_type(mvl_i* inst)
 {
     MVL->STACKFRAME_PUSH(inst);
-    MVL->type_register(inst, tokens::core_NativeFunction, nativeFunction_registration);
+    MVL->type_register(inst, TOKENS[inst].core_NativeFunction, nativeFunction_registration);
     MVL->stackframe_pop(inst);
 }
 

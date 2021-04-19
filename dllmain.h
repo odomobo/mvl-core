@@ -14,6 +14,7 @@
 #include <exception>
 #include <string>
 #include <cstring>
+#include <map>
 
 extern std::atomic<mvl_library_api*> mvl_api_ptr;
 
