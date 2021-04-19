@@ -97,9 +97,9 @@ mvl_type_register_callbacks const list_registration = {
     list_getReferences
 };
 
-//////////////////////
-// Method Functions //
-//////////////////////
+////////////////////////
+// Internal Functions //
+////////////////////////
 
 // Assumes that list is actually a list object, and is long enough that "index" is a valid index
 mvl_obj* list_get_internal(mvl_i* inst, mvl_obj* list, int index)
@@ -120,6 +120,10 @@ size_t list_length_internal(mvl_i* inst, mvl_obj* list)
     MVL->stackframe_pop(inst);
     return length;
 }
+
+//////////////////////
+// Method Functions //
+//////////////////////
 
 mvl_obj* CALL_CONVENTION list_length(mvl_i* inst, mvl_obj* args)
 {

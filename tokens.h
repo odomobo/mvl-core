@@ -12,6 +12,13 @@ struct TokensStruct
     token core_None_hash;
 
     token core_Bool;
+    token core_Bool_str;
+    token core_Bool_equals;
+    token core_Bool_hash;
+    token core_Bool_and;
+    token core_Bool_or;
+    token core_Bool_not;
+
     token core_Double;
     token core_String;
     token core_List;

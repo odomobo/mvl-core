@@ -21,14 +21,6 @@ void CALL_CONVENTION double_new(mvl_i* inst, mvl_obj* self, void* a, void* b, vo
     MVL->stackframe_pop(inst);
 }
 
-mvl_obj* double_new_internal(mvl_i* inst, double val)
-{
-    MVL->STACKFRAME_PUSH(inst);
-    auto ret = MVL->object_new(inst, TOKENS[inst].core_Double, &val, nullptr, nullptr, nullptr);
-    MVL->stackframe_pop(inst);
-    return ret;
-}
-
 void CALL_CONVENTION double_free(mvl_i* inst, mvl_obj* self)
 {
     MVL->STACKFRAME_PUSH(inst);
@@ -53,6 +45,27 @@ mvl_type_register_callbacks const double_registration = {
     double_getNativeData,
     nullptr
 };
+
+////////////////////////
+// Internal Functions //
+////////////////////////
+
+mvl_obj* double_new_internal(mvl_i* inst, double val)
+{
+    MVL->STACKFRAME_PUSH(inst);
+    auto ret = MVL->object_new(inst, TOKENS[inst].core_Double, &val, nullptr, nullptr, nullptr);
+    MVL->stackframe_pop(inst);
+    return ret;
+}
+
+// assumes double_obj is actually of type core.Double
+double double_get_internal(mvl_i* inst, mvl_obj* double_obj)
+{
+    MVL->STACKFRAME_PUSH(inst);
+    auto val = *static_cast<double*> (MVL->object_getDataPointer(inst, double_obj));
+    MVL->stackframe_pop(inst);
+    return val;
+}
 
 //////////////////////
 // Method Functions //

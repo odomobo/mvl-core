@@ -9,14 +9,6 @@ void CALL_CONVENTION none_new(mvl_i* inst, mvl_obj* self, void* a, void* b, void
     // no native data to set
 }
 
-mvl_obj* none_new_internal(mvl_i* inst)
-{
-    MVL->STACKFRAME_PUSH(inst);
-    auto ret = MVL->object_new(inst, TOKENS[inst].core_None, nullptr, nullptr, nullptr, nullptr);
-    MVL->stackframe_pop(inst);
-    return ret;
-}
-
 void CALL_CONVENTION none_free(mvl_i* inst, mvl_obj* self)
 {
     // no native data to free
@@ -34,6 +26,27 @@ mvl_type_register_callbacks const none_registration = {
     nullptr
 };
 
+////////////////////////
+// Internal Functions //
+////////////////////////
+
+mvl_obj* none_new_internal(mvl_i* inst)
+{
+    MVL->STACKFRAME_PUSH(inst);
+    auto ret = MVL->object_new(inst, TOKENS[inst].core_None, nullptr, nullptr, nullptr, nullptr);
+    MVL->stackframe_pop(inst);
+    return ret;
+}
+
+static bool check_none_self(mvl_i* inst, mvl_obj* obj)
+{
+    bool is_none = MVL->typeof(inst, obj) == TOKENS[inst].core_None;
+    if (!is_none)
+        MVL->error(inst, "Expected self to be type core.None");
+
+    return is_none;
+}
+
 //////////////////////
 // Method Functions //
 //////////////////////
@@ -41,8 +54,11 @@ mvl_type_register_callbacks const none_registration = {
 mvl_obj* CALL_CONVENTION none_str(mvl_i* inst, mvl_obj* args)
 {
     MVL->STACKFRAME_PUSH(inst);
-    verify_0_args(inst, args);
+    auto self = extract_1_args(inst, args);
     if (MVL->is_error(inst))
+        return nullptr;
+
+    if (!check_none_self(inst, self))
         return nullptr;
 
     auto ret = STRING_NEW_INTERNAL_BORROW(inst, "none");
@@ -57,11 +73,13 @@ mvl_obj* CALL_CONVENTION none_equals(mvl_i* inst, mvl_obj* args)
     if (MVL->is_error(inst))
         return nullptr;
 
-    auto self_is_none = MVL->typeof(inst, self) == TOKENS[inst].core_None;
-    auto other_is_none = MVL->typeof(inst, other) == TOKENS[inst].core_None;
-    auto equals = self_is_none && other_is_none;
+    if (!check_none_self(inst, self))
+        return nullptr;
 
-    auto ret = bool_new_internal(inst, equals);
+    // if other is core.None, then they are equal; otherwise they aren't
+    auto other_is_none = MVL->typeof(inst, other) == TOKENS[inst].core_None;
+
+    auto ret = bool_new_internal(inst, other_is_none);
     MVL->stackframe_pop(inst);
     return ret;
 }
@@ -69,8 +87,11 @@ mvl_obj* CALL_CONVENTION none_equals(mvl_i* inst, mvl_obj* args)
 mvl_obj* CALL_CONVENTION none_hash(mvl_i* inst, mvl_obj* args)
 {
     MVL->STACKFRAME_PUSH(inst);
-    verify_0_args(inst, args);
+    auto self = extract_1_args(inst, args);
     if (MVL->is_error(inst))
+        return nullptr;
+
+    if (!check_none_self(inst, self))
         return nullptr;
 
     auto ret = double_new_internal(inst, 0);

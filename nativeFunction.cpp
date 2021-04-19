@@ -32,26 +32,6 @@ void CALL_CONVENTION nativeFunction_new(mvl_i* inst, mvl_obj* self, void* a, voi
     MVL->stackframe_pop(inst);
 }
 
-mvl_obj* nativeFunction_new_internal(mvl_i* inst, token nativeFunction_token, mvl_nativeFunction_t nativeFunction_fp, char const* signature, char const* help_text)
-{
-    MVL->STACKFRAME_PUSH(inst);
-    mvl_obj* signature_obj;
-    if (signature == nullptr)
-        signature_obj = none_new_internal(inst);
-    else
-        signature_obj = STRING_NEW_INTERNAL_BORROW(inst, signature);
-
-    mvl_obj* help_text_obj;
-    if (help_text == nullptr)
-        help_text_obj = none_new_internal(inst);
-    else
-        help_text_obj = STRING_NEW_INTERNAL_BORROW(inst, help_text);
-
-    auto ret = MVL->object_new(inst, TOKENS[inst].core_NativeFunction, &nativeFunction_token, &nativeFunction_fp, signature_obj, help_text_obj);
-    MVL->stackframe_pop(inst);
-    return ret;
-}
-
 void CALL_CONVENTION nativeFunction_free(mvl_i* inst, mvl_obj* self)
 {
     MVL->STACKFRAME_PUSH(inst);
@@ -94,6 +74,30 @@ mvl_type_register_callbacks const nativeFunction_registration = {
     nativeFunction_getNativeData,
     nativeFunction_getReferences
 };
+
+////////////////////////
+// Internal Functions //
+////////////////////////
+
+mvl_obj* nativeFunction_new_internal(mvl_i* inst, token nativeFunction_token, mvl_nativeFunction_t nativeFunction_fp, char const* signature, char const* help_text)
+{
+    MVL->STACKFRAME_PUSH(inst);
+    mvl_obj* signature_obj;
+    if (signature == nullptr)
+        signature_obj = none_new_internal(inst);
+    else
+        signature_obj = STRING_NEW_INTERNAL_BORROW(inst, signature);
+
+    mvl_obj* help_text_obj;
+    if (help_text == nullptr)
+        help_text_obj = none_new_internal(inst);
+    else
+        help_text_obj = STRING_NEW_INTERNAL_BORROW(inst, help_text);
+
+    auto ret = MVL->object_new(inst, TOKENS[inst].core_NativeFunction, &nativeFunction_token, &nativeFunction_fp, signature_obj, help_text_obj);
+    MVL->stackframe_pop(inst);
+    return ret;
+}
 
 //////////////////////
 // Method Functions //

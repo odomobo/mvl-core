@@ -45,6 +45,13 @@ void tokens_init(mvl_i* inst)
         tokens_struct.core_None_hash = MVL->token_get(inst, "core.None$hash");
 
         tokens_struct.core_Bool = MVL->token_get(inst, "core.Bool");
+        tokens_struct.core_Bool_str = MVL->token_get(inst, "core.Bool$str");
+        tokens_struct.core_Bool_equals = MVL->token_get(inst, "core.Bool$equals");
+        tokens_struct.core_Bool_hash = MVL->token_get(inst, "core.Bool$hash");
+        tokens_struct.core_Bool_and = MVL->token_get(inst, "core.Bool.and");
+        tokens_struct.core_Bool_or = MVL->token_get(inst, "core.Bool.or");
+        tokens_struct.core_Bool_not = MVL->token_get(inst, "core.Bool.not");
+
         tokens_struct.core_Double = MVL->token_get(inst, "core.Double");
         tokens_struct.core_String = MVL->token_get(inst, "core.String");
         tokens_struct.core_List = MVL->token_get(inst, "core.List");

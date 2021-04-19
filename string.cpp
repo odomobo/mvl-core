@@ -87,6 +87,42 @@ void CALL_CONVENTION string_new(mvl_i* inst, mvl_obj* self, void* a, void* b, vo
     MVL->stackframe_pop(inst);
 }
 
+void CALL_CONVENTION string_free(mvl_i* inst, mvl_obj* self)
+{
+    MVL->STACKFRAME_PUSH(inst);
+    auto data = static_cast<String*>(MVL->object_getDataPointer(inst, self));
+    delete data;
+    MVL->stackframe_pop(inst);
+}
+
+// self.getNativeData(char const** string_out, size_t* length_out, ...);
+// Note that this gives a pointer to the string's native data; that means if the mvl_obj* is freed, then the reference to the string is no longer valid.
+void CALL_CONVENTION string_getNativeData(mvl_i* inst, mvl_obj* self, void* a, void* b, void* c, void* d)
+{
+    MVL->STACKFRAME_PUSH(inst);
+    String* dataPointer = static_cast<String*>(MVL->object_getDataPointer(inst, self));
+
+    auto a_string = static_cast<char const**>(a);
+    auto string_val = dataPointer->string;
+    *a_string = string_val;
+
+    auto b_length = static_cast<size_t*>(b);
+    auto length_val = dataPointer->length;
+    *b_length = length_val;
+    MVL->stackframe_pop(inst);
+}
+
+mvl_type_register_callbacks const string_registration = {
+    string_new,
+    string_free,
+    string_getNativeData,
+    nullptr
+};
+
+////////////////////////
+// Internal Functions //
+////////////////////////
+
 mvl_obj* string_new_internal_copy(mvl_i* inst, std::string& str)
 {
     MVL->STACKFRAME_PUSH(inst);
@@ -127,37 +163,26 @@ mvl_obj* string_new_internal_take(mvl_i* inst, char* str, size_t length)
     return ret;
 }
 
-void CALL_CONVENTION string_free(mvl_i* inst, mvl_obj* self)
+// assumes mvl_obj is a string
+std::string string_get_internal_copy(mvl_i* inst, mvl_obj* string)
 {
     MVL->STACKFRAME_PUSH(inst);
-    auto data = static_cast<String*>(MVL->object_getDataPointer(inst, self));
-    delete data;
+    auto data = static_cast<String*> (MVL->object_getDataPointer(inst, string));
+    auto ret = std::string{ data->string, data->length };
     MVL->stackframe_pop(inst);
+    return ret;
 }
 
-// self.getNativeData(char const** string_out, size_t* length_out, ...);
-// Note that this gives a pointer to the string's native data; that means if the mvl_obj* is freed, then the reference to the string is no longer valid.
-void CALL_CONVENTION string_getNativeData(mvl_i* inst, mvl_obj* self, void* a, void* b, void* c, void* d)
+// assumes mvl_obj is a string
+char const* string_get_internal_borrow(mvl_i* inst, mvl_obj* string, size_t* length_out)
 {
     MVL->STACKFRAME_PUSH(inst);
-    String* dataPointer = static_cast<String*>(MVL->object_getDataPointer(inst, self));
-
-    auto a_string = static_cast<char const**>(a);
-    auto string_val = dataPointer->string;
-    *a_string = string_val;
-
-    auto b_length = static_cast<size_t*>(b);
-    auto length_val = dataPointer->length;
-    *b_length = length_val;
+    auto data = static_cast<String*> (MVL->object_getDataPointer(inst, string));
+    if (length_out != nullptr)
+        *length_out = data->length;
     MVL->stackframe_pop(inst);
+    return data->string;
 }
-
-mvl_type_register_callbacks const string_registration = {
-    string_new,
-    string_free,
-    string_getNativeData,
-    nullptr
-};
 
 //////////////////////
 // Method Functions //
