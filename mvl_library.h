@@ -71,24 +71,6 @@ union mvl_data
     mvl_nativeFunction_t mvl_nativeFunction_val;
     void* voidp_val;
 
-    int int_in;
-    uint8_t uint8_in;
-    char char_in;
-    int32_t int32_in;
-    uint32_t uint32_in;
-    int64_t int64_in;
-    uint64_t uint64_in;
-    size_t size_in;
-    float float_in;
-    double double_in;
-    bool bool_in;
-    char* string_in;
-    char const* const_string_in;
-    mvl_obj* mvl_obj_in;
-    mvl_obj** mvl_obj_array_in;
-    mvl_nativeFunction_t mvl_nativeFunction_in;
-    void* voidp_in;
-
     int* int_out;
     uint8_t* uint8_out;
     char* char_out;
@@ -113,11 +95,6 @@ typedef union mvl_data mvl_data;
     inline mvl_data identifier##_val(type v) { \
         mvl_data ret; \
         ret.identifier##_val = v; \
-        return ret; \
-    } \
-    inline mvl_data identifier##_in(type v) { \
-        mvl_data ret; \
-        ret.identifier##_in = v; \
         return ret; \
     } \
     inline mvl_data identifier##_out(type* p) { \
@@ -149,6 +126,11 @@ inline mvl_data unused()
     return int_val(0);
 }
 
+inline mvl_data null_out()
+{
+    return voidp_val(NULL);
+}
+
 #undef MVL_DATA_HELPER
 
 /////////////////////////////////
@@ -164,9 +146,10 @@ typedef void (CALL_CONVENTION* mvl_object_free_callback_t)(mvl_obj* self);
 typedef size_t (CALL_CONVENTION* mvl_object_getReferences_callback_t)(mvl_obj* self, mvl_obj*** references_out);
 
 struct mvl_type_register_callbacks {
-    // must not be NULL
+    // if this is NULL, then that's asserting there is no data pointer
+    // that needs to be freed
     mvl_object_free_callback_t free_callback;
-    // if this is NULL, then that’s asserting this type 
+    // if this is NULL, then that's asserting this type 
     // never has any references
     mvl_object_getReferences_callback_t getReferences_callback;
 };
@@ -227,8 +210,8 @@ typedef mvl_libraryFunction_t(CALL_CONVENTION* mvl_libraryFunction_get_t)(mvl_to
 
 typedef void    (CALL_CONVENTION* mvl_type_register_t)(mvl_token type_name, mvl_type_register_callbacks callbacks);
 // Returns the data pointer, so the data can be accessed
-typedef void*   (CALL_CONVENTION* mvl_object_getDataPointer_t)(mvl_obj* obj);
-typedef void    (CALL_CONVENTION* mvl_object_setDataPointer_t)(mvl_obj* obj, void* data);
+typedef mvl_data(CALL_CONVENTION* mvl_object_getData_t)(mvl_obj* obj);
+typedef void    (CALL_CONVENTION* mvl_object_setData_t)(mvl_obj* obj, mvl_data data);
 typedef mvl_token   (CALL_CONVENTION* mvl_object_getTypename_token_t)(mvl_obj* obj);
 
 //////////////////////////////
@@ -259,8 +242,8 @@ struct mvl_library_api
     mvl_libraryFunction_register_t        libraryFunction_register;
     mvl_libraryFunction_get_t             libraryFunction_get;
     mvl_type_register_t                   type_register;
-    mvl_object_getDataPointer_t           object_getDataPointer;
-    mvl_object_setDataPointer_t           object_setDataPointer;
+    mvl_object_getData_t                  object_getData;
+    mvl_object_setData_t                  object_setData;
     mvl_object_getTypename_token_t        object_getTypename_token;
 };
 typedef struct mvl_library_api mvl_library_api;

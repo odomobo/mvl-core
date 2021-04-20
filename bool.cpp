@@ -4,26 +4,8 @@
 // Type Functions //
 ////////////////////
 
-void CALL_CONVENTION bool_free(mvl_obj* self)
-{
-    
-    auto data = static_cast<int*>(mvl->object_getDataPointer(self));
-    delete data;
-    
-}
-
-// self.getNativeData(int* bool_out,...);
-void CALL_CONVENTION bool_getNativeData(mvl_obj* self, void* a, void* b, void* c, void* d)
-{
-    
-    auto a_int = static_cast<int*>(a);
-    auto val = *static_cast<int*>(mvl->object_getDataPointer(self));
-    *a_int = val;
-    
-}
-
 mvl_type_register_callbacks const bool_registration = {
-    bool_free,
+    nullptr,
     nullptr
 };
 
@@ -31,28 +13,59 @@ mvl_type_register_callbacks const bool_registration = {
 // Library Functions //
 ///////////////////////
 
-// mvl_obj_val new(bool_in data_bool, ...)
+// mvl_obj_val new(bool_val data_bool, ...)
 mvl_data CALL_CONVENTION bool_new_libraryFunction(mvl_data data_bool, mvl_data b, mvl_data c, mvl_data d)
 {
-    return mvl_obj_val(mvl->object_create(core_cache.token_core_Bool, bool_val(data_bool.bool_in)));
+    return mvl_obj_val(mvl->object_create(core_cache.token_core_Bool, bool_val(data_bool.bool_val)));
 }
 
-mvl_obj* core_bool_new(bool val)
+// const_string_val str(mvl_obj_val self, ...)
+// assumes self is actually of type core.Bool
+mvl_data CALL_CONVENTION bool_str_libraryFunction(mvl_data self, mvl_data b, mvl_data c, mvl_data d)
 {
-    
-    auto ret = mvl->object_new(core_cache.token_core_Bool, &val, nullptr, nullptr, nullptr);
-    
-    return ret;
+    bool val = mvl->object_getData(self.mvl_obj_val).bool_val;
+    if (val)
+        return const_string_val("true");
+    else
+        return const_string_val("false");
 }
 
-// assumes bool_obj is actually of type core.Bool
-bool core_bool_getVal(mvl_obj* bool_obj)
+// bool_val equals(mvl_obj_val self, mvl_obj_val other, ...)
+// assumes self is actually of type core.Bool
+mvl_data CALL_CONVENTION bool_equals_libraryFunction(mvl_data self, mvl_data other, mvl_data c, mvl_data d)
 {
-    
-    auto val = *static_cast<int*>(mvl->object_getDataPointer(bool_obj));
-    
-    return static_cast<bool>(val);
+    bool other_is_bool = mvl->typeof(other.mvl_obj_val) == core_cache.token_core_Bool;
+    if (!other_is_bool)
+        return bool_val(false);
+
+    bool self_val = mvl->object_getData(self.mvl_obj_val).bool_val;
+    bool other_val = mvl->object_getData(other.mvl_obj_val).bool_val;
+
+    return bool_val(self_val == other_val);
 }
+
+// uint32_val hash(mvl_obj_val self, ...)
+// assumes self is actually of type core.Bool
+mvl_data CALL_CONVENTION bool_hash_libraryFunction(mvl_data self, mvl_data b, mvl_data c, mvl_data d)
+{
+    // TODO: what value to use for hash values?
+    bool val = mvl->object_getData(self.mvl_obj_val).bool_val;
+    if (val)
+        return uint32_val(0);
+    else
+        return uint32_val(1);
+}
+
+// bool_val getVal(mvl_obj_val self, ...)
+// assumes self is actually of type core.Bool
+mvl_data CALL_CONVENTION bool_getVal_libraryFunction(mvl_data self, mvl_data b, mvl_data c, mvl_data d)
+{
+    return mvl->object_getData(self.mvl_obj_val);
+}
+
+//////////////////////
+// Method Functions //
+//////////////////////
 
 static bool check_bool_self(mvl_obj* obj)
 {
@@ -72,13 +85,8 @@ static bool check_bool_other(mvl_obj* obj)
     return is_bool;
 }
 
-//////////////////////
-// Method Functions //
-//////////////////////
-
 mvl_obj* CALL_CONVENTION bool_str(mvl_obj* args)
 {
-    
     auto self = extract_1_args(args);
     if (mvl->is_error())
         return nullptr;
@@ -86,11 +94,8 @@ mvl_obj* CALL_CONVENTION bool_str(mvl_obj* args)
     if (!check_bool_self(self))
         return nullptr;
 
-    bool val = bool_get_internal(self);
-    mvl_obj* ret = val ? STRING_NEW_INTERNAL_BORROW("true") : STRING_NEW_INTERNAL_BORROW("false");
-
-    
-    return ret;
+    char const* string = core_bool_str(self);
+    return core_string_new_borrow(string, 0); // TODO: set length
 }
 
 mvl_obj* CALL_CONVENTION bool_equals(mvl_obj* args)
@@ -103,18 +108,8 @@ mvl_obj* CALL_CONVENTION bool_equals(mvl_obj* args)
     if (!check_bool_self(self))
         return nullptr;
 
-    bool other_is_bool = mvl->typeof(other) == core_cache.token_core_Bool;
-
-    bool match = false;
-    if (other_is_bool)
-    {
-        match = bool_get_internal(self) == bool_get_internal(other);
-    }
-
-    auto ret = bool_new_internal(other_is_bool && match);
-
-    
-    return ret;
+    bool val = core_bool_equals(self, other);
+    return core_bool_new(val);
 }
 
 mvl_obj* CALL_CONVENTION bool_hash(mvl_obj* args)
@@ -127,11 +122,8 @@ mvl_obj* CALL_CONVENTION bool_hash(mvl_obj* args)
     if (!check_bool_self(self))
         return nullptr;
 
-    bool val = bool_get_internal(self);
-    auto ret = double_new_internal(static_cast<double>(val));
-    
-    
-    return ret;
+    uint32_t hash = core_bool_hash(self);
+    return core_double_new(static_cast<double>(hash));
 }
 
 mvl_obj* CALL_CONVENTION bool_and(mvl_obj* args)
@@ -144,11 +136,8 @@ mvl_obj* CALL_CONVENTION bool_and(mvl_obj* args)
     if (!check_bool_self(self) || !check_bool_other(self))
         return nullptr;
 
-    bool val = bool_get_internal(self) && bool_get_internal(other);
-    auto ret = bool_new_internal(val);
-
-    
-    return ret;
+    bool val = core_bool_getVal(self) && core_bool_getVal(other);
+    return core_bool_new(val);
 }
 
 mvl_obj* CALL_CONVENTION bool_or(mvl_obj* args)
@@ -161,11 +150,8 @@ mvl_obj* CALL_CONVENTION bool_or(mvl_obj* args)
     if (!check_bool_self(self) || !check_bool_other(self))
         return nullptr;
 
-    bool val = bool_get_internal(self) || bool_get_internal(other);
-    auto ret = bool_new_internal(val);
-
-    
-    return ret;
+    bool val = core_bool_getVal(self) || core_bool_getVal(other);
+    return core_bool_new(val);
 }
 
 mvl_obj* CALL_CONVENTION bool_not(mvl_obj* args)
@@ -178,11 +164,8 @@ mvl_obj* CALL_CONVENTION bool_not(mvl_obj* args)
     if (!check_bool_self(self))
         return nullptr;
 
-    bool val = !bool_get_internal(self);
-    auto ret = bool_new_internal(val);
-    
-    
-    return ret;
+    bool val = !core_bool_getVal(self);
+    return core_bool_new(val);
 }
 
 ////////////////////////////
@@ -191,19 +174,24 @@ mvl_obj* CALL_CONVENTION bool_not(mvl_obj* args)
 
 void bool_register_type()
 {
-    
     mvl->type_register(core_cache.token_core_Bool, bool_registration);
-    
+}
+
+void bool_register_libraryFunctions()
+{
+    mvl->libraryFunction_register(core_cache.token_core_Bool_new, bool_new_libraryFunction);
+    mvl->libraryFunction_register(core_cache.token_core_Bool_str, bool_str_libraryFunction);
+    mvl->libraryFunction_register(core_cache.token_core_Bool_equals, bool_equals_libraryFunction);
+    mvl->libraryFunction_register(core_cache.token_core_Bool_hash, bool_hash_libraryFunction);
+    mvl->libraryFunction_register(core_cache.token_core_Bool_getVal, bool_getVal_libraryFunction);
 }
 
 void bool_register_nativeFunctions()
 {
-    
     mvl->nativeFunction_register(core_cache.token_core_Bool_mStr, bool_str);
     mvl->nativeFunction_register(core_cache.token_core_Bool_mEquals, bool_equals);
     mvl->nativeFunction_register(core_cache.token_core_Bool_mHash, bool_hash);
     mvl->nativeFunction_register(core_cache.token_core_Bool_and, bool_and);
     mvl->nativeFunction_register(core_cache.token_core_Bool_or, bool_or);
     mvl->nativeFunction_register(core_cache.token_core_Bool_not, bool_not);
-    
 }

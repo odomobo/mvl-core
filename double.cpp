@@ -4,67 +4,26 @@
 // Type Functions //
 ////////////////////
 
-// self.new(double* data, ...)
-void CALL_CONVENTION double_new(mvl_obj* self, void* a, void* b, void* c, void* d)
-{
-    
-    auto val = *static_cast<double*>(a);
-    
-    double* data = nullptr;
-    try {
-        data = new double{ val };
-    } catch (std::bad_alloc&) {
-        error_memory(); // terminates the application
-    }
-
-    mvl->object_setDataPointer(self, data);
-    
-}
-
-void CALL_CONVENTION double_free(mvl_obj* self)
-{
-    
-    auto data = static_cast<double*>(mvl->object_getDataPointer(self));
-    delete data;
-    
-}
-
-// self.getNativeData(double* val_out,...);
-void CALL_CONVENTION double_getNativeData(mvl_obj* self, void* a, void* b, void* c, void* d)
-{
-    
-    auto a_double = static_cast<double*>(a);
-    auto val = *static_cast<double*>(mvl->object_getDataPointer(self));
-    *a_double = val;
-    
-}
-
 mvl_type_register_callbacks const double_registration = {
-    double_new,
-    double_free,
-    double_getNativeData,
+    nullptr,
     nullptr
 };
 
-////////////////////////
-// Internal Functions //
-////////////////////////
+///////////////////////
+// Library Functions //
+///////////////////////
 
-mvl_obj* double_new_internal(double val)
+// mvl_obj_val new(double_val data_double, ...)
+mvl_data CALL_CONVENTION double_new_libraryFunction(mvl_data data_double, mvl_data b, mvl_data c, mvl_data d)
 {
-    
-    auto ret = mvl->object_new(core_cache.token_core_Double, &val, nullptr, nullptr, nullptr);
-    
-    return ret;
+    return mvl_obj_val(mvl->object_create(core_cache.token_core_Double, bool_val(data_double.double_val)));
 }
 
-// assumes double_obj is actually of type core.Double
-double double_get_internal(mvl_obj* double_obj)
+// double_val new(mvl_obj_val self, ...)
+// assumes self is actually of type core.Double
+mvl_data CALL_CONVENTION double_getVal_libraryFunction(mvl_data self, mvl_data b, mvl_data c, mvl_data d)
 {
-    
-    auto val = *static_cast<double*> (mvl->object_getDataPointer(double_obj));
-    
-    return val;
+    return mvl->object_getData(self.mvl_obj_val);
 }
 
 //////////////////////

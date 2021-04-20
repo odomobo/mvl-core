@@ -32,7 +32,7 @@ void CALL_CONVENTION list_new(mvl_obj* self, void* a, void* b, void* c, void* d)
         error_memory(); // terminates the application
     }
 
-    mvl->object_setDataPointer(self, native_data);
+    mvl->object_setData(self, native_data);
 }
 
 // TODO: not yet registered, etc
@@ -70,7 +70,7 @@ mvl_obj* core_list_new(std::vector<mvl_obj*> elements)
 
 void CALL_CONVENTION list_free(mvl_obj* self)
 {
-    auto data = static_cast<List*>(mvl->object_getDataPointer(self));
+    auto data = static_cast<List*>(mvl->object_getData(self));
     delete data;
 }
 
@@ -78,7 +78,7 @@ void CALL_CONVENTION list_free(mvl_obj* self)
 // Note that this gives a pointer to the list's native data; that means if the mvl_obj* is freed or if the list is modified, then the reference to the list data is no longer valid.
 void CALL_CONVENTION list_getNativeData(mvl_obj* self, void* a, void* b, void* c, void* d)
 {
-    List* dataPointer = static_cast<List*>(mvl->object_getDataPointer(self));
+    List* dataPointer = static_cast<List*>(mvl->object_getData(self));
     auto a_length = static_cast<size_t*>(a);
     auto length_val = dataPointer->data.size();
     *a_length = length_val;
@@ -90,7 +90,7 @@ void CALL_CONVENTION list_getNativeData(mvl_obj* self, void* a, void* b, void* c
 
 size_t CALL_CONVENTION list_getReferences(mvl_obj* self, mvl_obj*** references_out)
 {
-    List* dataPointer = static_cast<List*>(mvl->object_getDataPointer(self));
+    List* dataPointer = static_cast<List*>(mvl->object_getData(self));
 
     auto length = dataPointer->data.size();
     *references_out = static_cast<mvl_obj**>(calloc(length, sizeof(mvl_obj*)));
@@ -103,9 +103,7 @@ size_t CALL_CONVENTION list_getReferences(mvl_obj* self, mvl_obj*** references_o
 }
 
 mvl_type_register_callbacks const list_registration = {
-    list_new,
     list_free,
-    list_getNativeData,
     list_getReferences
 };
 
@@ -116,14 +114,14 @@ mvl_type_register_callbacks const list_registration = {
 // Assumes that list is actually a list object, and is long enough that "index" is a valid index
 mvl_obj* list_get_internal(mvl_obj* list, int index)
 {
-    List* dataPointer = static_cast<List*>(mvl->object_getDataPointer(list));
+    List* dataPointer = static_cast<List*>(mvl->object_getData(list));
     return dataPointer->data[index];
 }
 
 // Assumes that list is actually a list object
 size_t list_length_internal(mvl_obj* list)
 {
-    List* dataPointer = static_cast<List*>(mvl->object_getDataPointer(list));
+    List* dataPointer = static_cast<List*>(mvl->object_getData(list));
     return dataPointer->data.size();
 }
 
@@ -144,7 +142,7 @@ mvl_obj* CALL_CONVENTION list_length(mvl_obj* args)
     }
     
     double length = static_cast<double>(list_length_internal(list));
-    return double_new_internal(length);
+    return core_double_new(length);
 }
 
 ////////////////////////////
@@ -156,9 +154,12 @@ void list_register_type()
     mvl->type_register(core_cache.token_core_List, list_registration);
 }
 
+void list_register_libraryFunctions()
+{
+    // TODO
+}
+
 void list_register_nativeFunctions()
 {
-    
     // TODO
-    
 }
