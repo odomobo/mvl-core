@@ -1,47 +1,55 @@
 // dllmain.cpp : Defines the entry point for the DLL application.
 #include "pch.h"
 
-std::atomic<mvl_library_api*> mvl_api_ptr;
+mvl_library_api* mvl;
+CoreCache core_cache;
 
-static void register_types(mvl_i* inst)
+static void register_types()
 {
-    MVL->STACKFRAME_PUSH(inst);
-    none_register_type(inst);
-    bool_register_type(inst);
-    double_register_type(inst);
-    string_register_type(inst);
-    list_register_type(inst);
-    nativeFunction_register_type(inst);
-    MVL->stackframe_pop(inst);
+    none_register_type();
+    bool_register_type();
+    double_register_type();
+    string_register_type();
+    list_register_type();
+    nativeFunction_register_type();
 }
 
-static void register_nativeFunctions(mvl_i* inst)
+static void register_libraryFunctions()
 {
-    MVL->STACKFRAME_PUSH(inst);
-    none_register_nativeFunctions(inst);
-    bool_register_nativeFunctions(inst);
-    double_register_nativeFunctions(inst);
-    string_register_nativeFunctions(inst);
-    list_register_nativeFunctions(inst);
-    nativeFunction_register_nativeFunctions(inst);
-    MVL->stackframe_pop(inst);
+    none_register_libraryFunctions();
+    bool_register_libraryFunctions();
+    double_register_libraryFunctions();
+    string_register_libraryFunctions();
+    list_register_libraryFunctions();
+    libraryFunction_register_libraryFunctions();
 }
 
-static void set_globals(mvl_i* inst)
+static void register_nativeFunctions()
 {
-    MVL->STACKFRAME_PUSH(inst);
+    none_register_nativeFunctions();
+    bool_register_nativeFunctions();
+    double_register_nativeFunctions();
+    string_register_nativeFunctions();
+    list_register_nativeFunctions();
+    nativeFunction_register_nativeFunctions();
+}
+
+static void set_globals()
+{
     throw std::exception("not implemented");
-    MVL->stackframe_pop(inst);
 }
 
-void load(mvl_i* inst, mvl_library_api* mvl_api)
+void load(mvl_library_api* mvl_api)
 {
-    MVL->STACKFRAME_PUSH(inst);
-    mvl_api_ptr = mvl_api;
+    mvl = mvl_api;
+    core_init_tokens(mvl_api);
 
-    tokens_init(inst);
-    register_types(inst);
-    register_nativeFunctions(inst);
-    set_globals(inst);
-    MVL->stackframe_pop(inst);
+    register_types();
+
+    register_libraryFunctions();
+    // must be called after registering library functions, but should be called as soon as possible
+    core_init_libraryFunctions(mvl_api);
+
+    register_nativeFunctions();
+    set_globals();
 }

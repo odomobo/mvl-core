@@ -22,6 +22,10 @@
 #define EXPORT(type) extern type
 #endif
 
+#ifndef __cplusplus
+#include <stdbool.h>
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -29,13 +33,6 @@ extern "C" {
 /////////////////////////////
 //          Types          //
 /////////////////////////////
-
-// A struct pointing to the MVL instance.
-// This can be null in the case that the MVL interpreter implementation has a single global instance,
-// but this allows for the functionality of having multiple independent interpreters running in the
-// same application.
-struct mvl_i;
-typedef struct mvl_i mvl_i;
 
 // A struct pointing to an MVL object.
 // These are automatically memory managed, and will be GCd automatically.
@@ -45,99 +42,194 @@ typedef struct mvl_i mvl_i;
 struct mvl_obj;
 typedef struct mvl_obj mvl_obj;
 
-typedef uint64_t token;
+typedef uint64_t mvl_token;
+
+/////////////////////////
+// MVL Data Type Union //
+/////////////////////////
+
+// this is needed before mvl_data, because it is part of the mvl_data union
+typedef mvl_obj* (CALL_CONVENTION* mvl_nativeFunction_t)(mvl_obj* list);
+
+union mvl_data
+{
+    int int_val;
+    uint8_t uint8_val;
+    char char_val;
+    int32_t int32_val;
+    uint32_t uint32_val;
+    int64_t int64_val;
+    uint64_t uint64_val;
+    size_t size_val;
+    float float_val;
+    double double_val;
+    bool bool_val;
+    char* string_val;
+    char const* const_string_val;
+    mvl_obj* mvl_obj_val;
+    mvl_obj** mvl_obj_array_val;
+    mvl_nativeFunction_t mvl_nativeFunction_val;
+    void* voidp_val;
+
+    int int_in;
+    uint8_t uint8_in;
+    char char_in;
+    int32_t int32_in;
+    uint32_t uint32_in;
+    int64_t int64_in;
+    uint64_t uint64_in;
+    size_t size_in;
+    float float_in;
+    double double_in;
+    bool bool_in;
+    char* string_in;
+    char const* const_string_in;
+    mvl_obj* mvl_obj_in;
+    mvl_obj** mvl_obj_array_in;
+    mvl_nativeFunction_t mvl_nativeFunction_in;
+    void* voidp_in;
+
+    int* int_out;
+    uint8_t* uint8_out;
+    char* char_out;
+    int32_t* int32_out;
+    uint32_t* uint32_out;
+    int64_t* int64_out;
+    uint64_t* uint64_out;
+    size_t* size_out;
+    float* float_out;
+    double* double_out;
+    bool* bool_out;
+    char** string_out;
+    char const** const_string_out;
+    mvl_obj** mvl_obj_out;
+    mvl_obj*** mvl_obj_array_out;
+    mvl_nativeFunction_t* mvl_nativeFunction_out;
+    void** voidp_out;
+};
+typedef union mvl_data mvl_data;
+
+#define MVL_DATA_HELPER(type, identifier) \
+    inline mvl_data identifier##_val(type v) { \
+        mvl_data ret; \
+        ret.identifier##_val = v; \
+        return ret; \
+    } \
+    inline mvl_data identifier##_in(type v) { \
+        mvl_data ret; \
+        ret.identifier##_in = v; \
+        return ret; \
+    } \
+    inline mvl_data identifier##_out(type* p) { \
+        mvl_data ret; \
+        ret.identifier##_out = p; \
+        return ret; \
+    }
+
+MVL_DATA_HELPER(int, int)
+MVL_DATA_HELPER(uint8_t, uint8)
+MVL_DATA_HELPER(char, char)
+MVL_DATA_HELPER(int32_t, int32)
+MVL_DATA_HELPER(uint32_t, uint32)
+MVL_DATA_HELPER(int64_t, int64)
+MVL_DATA_HELPER(uint64_t, uint64)
+MVL_DATA_HELPER(size_t, size)
+MVL_DATA_HELPER(float, float)
+MVL_DATA_HELPER(double, double)
+MVL_DATA_HELPER(bool, bool)
+MVL_DATA_HELPER(char*, string)
+MVL_DATA_HELPER(char const*, const_string)
+MVL_DATA_HELPER(mvl_obj*, mvl_obj)
+MVL_DATA_HELPER(mvl_obj**, mvl_obj_array)
+MVL_DATA_HELPER(mvl_nativeFunction_t, mvl_nativeFunction)
+MVL_DATA_HELPER(void*, voidp)
+
+inline mvl_data unused()
+{
+    return int_val(0);
+}
+
+#undef MVL_DATA_HELPER
 
 /////////////////////////////////
 // Type Registration Callbacks //
 /////////////////////////////////
 
-// Needs to update the data in the object provided. The object provided is the correct type, but with a null data pointer.
-typedef void (CALL_CONVENTION* mvl_object_new_callback_t)(mvl_i* inst, mvl_obj* self, void* a, void* b, void* c, void* d);
 // only responsible for freeing the native data; the interpreter will free the mvl_obj*
-typedef void (CALL_CONVENTION* mvl_object_free_callback_t)(mvl_i* inst, mvl_obj* self);
-typedef void (CALL_CONVENTION* mvl_object_getNativeData_callback_t)(mvl_i* inst, mvl_obj* self, void* a, void* b, void* c, void* d);
+typedef void (CALL_CONVENTION* mvl_object_free_callback_t)(mvl_obj* self);
 // Returns reference count.
 // Caller is responsible for freeing references_out array.
 // "references_out" is a pointer to an array of mvl_obj*.
 // *references_out must have been allocated using malloc() or calloc(), because it will be freed with free().
-typedef size_t (CALL_CONVENTION* mvl_object_getReferences_callback_t)(mvl_i* inst, mvl_obj* self, mvl_obj*** references_out);
+typedef size_t (CALL_CONVENTION* mvl_object_getReferences_callback_t)(mvl_obj* self, mvl_obj*** references_out);
 
 struct mvl_type_register_callbacks {
-    // must not be null
-    mvl_object_new_callback_t new_callback;
     // must not be NULL
     mvl_object_free_callback_t free_callback;
-    // must not be null
-    mvl_object_getNativeData_callback_t getNativeData_callback;
     // if this is NULL, then that’s asserting this type 
     // never has any references
     mvl_object_getReferences_callback_t getReferences_callback;
 };
 typedef struct mvl_type_register_callbacks mvl_type_register_callbacks;
 
-typedef mvl_obj*(CALL_CONVENTION* mvl_nativeFunction_t)(mvl_i* inst, mvl_obj* list);
-
 ///////////////////////////////
 // General Library Functions //
 ///////////////////////////////
 
-// Uses a reference to function_sig, so it should not be modified or freed until the matching mvl_stackframe_pop.
-typedef void    (CALL_CONVENTION* mvl_stackframe_push_t)(mvl_i* inst, char const* function_name, char const* file, int line);
-typedef void    (CALL_CONVENTION* mvl_stackframe_pop_t)(mvl_i* inst);
 // Causes a stack trace to be printed.
-typedef void    (CALL_CONVENTION* mvl_error_t)(mvl_i* inst, char const* error_message);
-typedef void    (CALL_CONVENTION* mvl_error_memory_t)(mvl_i* inst);
-typedef int     (CALL_CONVENTION* mvl_is_error_t)(mvl_i* inst);
+typedef void    (CALL_CONVENTION* mvl_error_t)(char const* error_message);
+typedef void    (CALL_CONVENTION* mvl_error_memory_t)();
+typedef int     (CALL_CONVENTION* mvl_is_error_t)();
 // Token is an identifier which is created from a string. Tokens should only be used internally for various lightweight identifiers, because they are never freed.
-typedef token   (CALL_CONVENTION* mvl_token_get_t)(mvl_i* inst, char const* string);
+typedef mvl_token   (CALL_CONVENTION* mvl_token_get_t)(char const* string);
 // Caller is responsible for freeing string
-typedef char*   (CALL_CONVENTION* mvl_token_toString_t)(mvl_i* inst, token t);
-typedef token   (CALL_CONVENTION* mvl_typeof_t)(mvl_i* inst, mvl_obj* obj);
-typedef void    (CALL_CONVENTION* mvl_import_t)(mvl_i* inst, char const* library);
-typedef void    (CALL_CONVENTION* mvl_script_run_t)(mvl_i* inst, char const* script_name, char const* source);
-typedef void    (CALL_CONVENTION* mvl_gc_run_t)(mvl_i* inst);
+typedef char*   (CALL_CONVENTION* mvl_token_toString_t)(mvl_token t);
+typedef mvl_token   (CALL_CONVENTION* mvl_typeof_t)(mvl_obj* obj);
+typedef void    (CALL_CONVENTION* mvl_import_t)(char const* library);
+typedef void    (CALL_CONVENTION* mvl_script_run_t)(char const* script_name, char const* source);
+typedef void    (CALL_CONVENTION* mvl_gc_run_t)();
 
 ///////////////////////////////////////
 // Function- & Method-Call Functions //
 ///////////////////////////////////////
 
-typedef mvl_obj*(CALL_CONVENTION* mvl_function_callOnObject_t)(mvl_i* inst, mvl_obj* func, mvl_obj* args);
-typedef mvl_obj*(CALL_CONVENTION* mvl_function_callByGlobalIdentifier_t)(mvl_i* inst, token identifier, mvl_obj* args);
-typedef mvl_obj*(CALL_CONVENTION* mvl_method_call_t)(mvl_i* inst, mvl_obj* object, token method, mvl_obj* args);
+typedef mvl_obj*(CALL_CONVENTION* mvl_function_callOnObject_t)(mvl_obj* func, mvl_obj* args);
+typedef mvl_obj*(CALL_CONVENTION* mvl_function_callByGlobalIdentifier_t)(mvl_token identifier, mvl_obj* args);
+typedef mvl_obj*(CALL_CONVENTION* mvl_method_call_t)(mvl_obj* object, mvl_token method, mvl_obj* args);
 
 ///////////////////////////////////
 // Global Manipulation Functions //
 ///////////////////////////////////
 
-typedef mvl_obj*(CALL_CONVENTION* mvl_global_get_t)(mvl_i* inst, token identifier);
-typedef void    (CALL_CONVENTION* mvl_global_set_t)(mvl_i* inst, token identifier, mvl_obj* obj);
-typedef void    (CALL_CONVENTION* mvl_global_unset_t)(mvl_i* inst, token identifier);
-typedef int     (CALL_CONVENTION* mvl_global_exists_t)(mvl_i* inst, token identifier);
+typedef mvl_obj*(CALL_CONVENTION* mvl_global_get_t)(mvl_token identifier);
+typedef void    (CALL_CONVENTION* mvl_global_set_t)(mvl_token identifier, mvl_obj* obj);
+typedef void    (CALL_CONVENTION* mvl_global_unset_t)(mvl_token identifier);
+typedef int     (CALL_CONVENTION* mvl_global_exists_t)(mvl_token identifier);
 // Returns length of "identifiers_out", which is also the number of globals. Caller is responsible for freeing "identifiers_out". "identifiers_out" is a pointer to an array of tokens.
-typedef size_t  (CALL_CONVENTION* mvl_global_getAllIdentifiers_t)(mvl_i* inst, token** identifiers_out);
+typedef size_t  (CALL_CONVENTION* mvl_global_getAllIdentifiers_t)(mvl_token** identifiers_out);
 
 ////////////////////////////////////////////
 // Native Object Access; Native Functions //
 ////////////////////////////////////////////
 
+typedef mvl_data(CALL_CONVENTION* mvl_libraryFunction_t)(mvl_data a, mvl_data b, mvl_data c, mvl_data d);
+
 // Used to get a new object of the specified type, from native data. This can be called across libraries.
-// Each type will have its own interface.
-typedef mvl_obj*(CALL_CONVENTION* mvl_object_new_t)(mvl_i* inst, token type_name, void* a, void* b, void* c, void* d);
-// Used to get native data from an object. You should check that the object has the right type before trying to get its data.
-// Can be called across libraries.
-typedef void    (CALL_CONVENTION* mvl_object_getNativeData_t)(mvl_i* inst, token type_name, mvl_obj* obj, void* a, void* b, void* c, void* d);
-typedef void    (CALL_CONVENTION* mvl_nativeFunction_register_t)(mvl_i* inst, token library_function_identifier, mvl_nativeFunction_t function_callback);
-typedef mvl_obj*(CALL_CONVENTION* mvl_nativeFunction_call_t)(mvl_i* inst, token library_function_identifier, mvl_obj* args);
+typedef mvl_obj*(CALL_CONVENTION* mvl_object_create_t)(mvl_token type_name, mvl_data data);
+typedef void    (CALL_CONVENTION* mvl_nativeFunction_register_t)(mvl_token nativeFunction_identifier, mvl_nativeFunction_t function_callback);
+typedef void    (CALL_CONVENTION* mvl_libraryFunction_register_t)(mvl_token libraryFunction_identifier, mvl_libraryFunction_t function_callback);
+typedef mvl_libraryFunction_t(CALL_CONVENTION* mvl_libraryFunction_get_t)(mvl_token libraryFunction_identifier);
+
 
 ///////////////////////
 // Type Registration //
 ///////////////////////
 
-typedef void    (CALL_CONVENTION* mvl_type_register_t)(mvl_i* inst, token type_name, mvl_type_register_callbacks callbacks);
+typedef void    (CALL_CONVENTION* mvl_type_register_t)(mvl_token type_name, mvl_type_register_callbacks callbacks);
 // Returns the data pointer, so the data can be accessed
-typedef void*   (CALL_CONVENTION* mvl_object_getDataPointer_t)(mvl_i* inst, mvl_obj* obj);
-typedef void    (CALL_CONVENTION* mvl_object_setDataPointer_t)(mvl_i* inst, mvl_obj* obj, void* data);
-typedef token   (CALL_CONVENTION* mvl_object_getTypename_token_t)(mvl_i* inst, mvl_obj* obj);
+typedef void*   (CALL_CONVENTION* mvl_object_getDataPointer_t)(mvl_obj* obj);
+typedef void    (CALL_CONVENTION* mvl_object_setDataPointer_t)(mvl_obj* obj, void* data);
+typedef mvl_token   (CALL_CONVENTION* mvl_object_getTypename_token_t)(mvl_obj* obj);
 
 //////////////////////////////
 // MVL API Callbacks Struct //
@@ -145,8 +237,6 @@ typedef token   (CALL_CONVENTION* mvl_object_getTypename_token_t)(mvl_i* inst, m
 
 struct mvl_library_api
 {
-    mvl_stackframe_push_t                 stackframe_push;
-    mvl_stackframe_pop_t                  stackframe_pop;
     mvl_error_t                           error;
     mvl_error_memory_t                    error_memory;
     mvl_is_error_t                        is_error;
@@ -157,17 +247,17 @@ struct mvl_library_api
     mvl_script_run_t                      script_run;
     mvl_gc_run_t                          gc_run;
     mvl_function_callOnObject_t           function_callOnObject;
-    mvl_function_callByGlobalIdentifier_t function_callByIdentifier;
+    mvl_function_callByGlobalIdentifier_t function_callByGlobalIdentifier;
     mvl_method_call_t                     method_call;
     mvl_global_get_t                      global_get;
     mvl_global_set_t                      global_set;
     mvl_global_unset_t                    global_unset;
     mvl_global_exists_t                   global_exists;
     mvl_global_getAllIdentifiers_t        global_getAllIdentifiers;
-    mvl_object_new_t                      object_new;
-    mvl_object_getNativeData_t            object_getNativeData;
+    mvl_object_create_t                   object_create;
     mvl_nativeFunction_register_t         nativeFunction_register;
-    mvl_nativeFunction_call_t             nativeFunction_call;
+    mvl_libraryFunction_register_t        libraryFunction_register;
+    mvl_libraryFunction_get_t             libraryFunction_get;
     mvl_type_register_t                   type_register;
     mvl_object_getDataPointer_t           object_getDataPointer;
     mvl_object_setDataPointer_t           object_setDataPointer;

@@ -1,12 +1,9 @@
 #pragma once
 #include "mvl_library.h"
 
-#define MVL mvl_api_ptr.load()
-#define STACKFRAME_PUSH(inst) stackframe_push(inst, __func__, __FILE__, __LINE__)
-
-void error_memory(mvl_i* inst);
-void verify_0_args(mvl_i* inst, mvl_obj* args);
-void verify_1_args(mvl_i* inst, mvl_obj* args);
-mvl_obj* extract_1_args(mvl_i* inst, mvl_obj* args);
-std::array<mvl_obj*, 2> extract_2_args(mvl_i* inst, mvl_obj* args);
-std::array<mvl_obj*, 3> extract_3_args(mvl_i* inst, mvl_obj* args);
+void error_memory();
+void verify_0_args(mvl_obj* args);
+void verify_1_args(mvl_obj* args);
+mvl_obj* extract_1_args(mvl_obj* args);
+std::array<mvl_obj*, 2> extract_2_args(mvl_obj* args);
+std::array<mvl_obj*, 3> extract_3_args(mvl_obj* args);

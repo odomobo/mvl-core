@@ -9,13 +9,12 @@
 #endif
 
 #include <vector>
-#include <atomic>
 #include <array>
 #include <exception>
 #include <string>
 #include <cstring>
 #include <map>
 
-extern std::atomic<mvl_library_api*> mvl_api_ptr;
+extern mvl_library_api* mvl;
 
-void load(mvl_i* inst, mvl_library_api* mvl_api);
+void load(mvl_library_api* mvl_api);
