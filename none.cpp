@@ -26,14 +26,6 @@ mvl_data CALL_CONVENTION none_str_libraryFunction(mvl_data self, mvl_data b, mvl
     return const_string_val("none");
 }
 
-// bool_val equals(mvl_obj_val self, mvl_obj_val other, ...)
-// assumes self is core.None
-mvl_data CALL_CONVENTION none_equals_libraryFunction(mvl_data self, mvl_data other, mvl_data c, mvl_data d)
-{
-    bool other_is_none = mvl->typeof(other.mvl_obj_val) == core_cache.token_core_None;
-    return bool_val(other_is_none);
-}
-
 // uint32_val hash(mvl_obj_val self, ...)
 // assumes self is core.None
 mvl_data CALL_CONVENTION none_hash_libraryFunction(mvl_data self, mvl_data b, mvl_data c, mvl_data d)
@@ -49,7 +41,7 @@ static bool check_none_self(mvl_obj* obj)
 {
     bool is_none = mvl->typeof(obj) == core_cache.token_core_None;
     if (!is_none)
-        mvl->error("Expected self to be type core.None");
+        mvl->error("self is not type core.None");
 
     return is_none;
 }
@@ -77,8 +69,8 @@ mvl_obj* CALL_CONVENTION none_equals(mvl_obj* args)
     if (!check_none_self(self))
         return nullptr;
 
-    bool val = core_none_equals(self, other);
-    return core_bool_new(val);
+    bool other_is_none = mvl->typeof(other) == core_cache.token_core_None;
+    return core_bool_new(other_is_none);
 }
 
 mvl_obj* CALL_CONVENTION none_hash(mvl_obj* args)
@@ -107,7 +99,6 @@ void none_register_libraryFunctions()
 {
     mvl->libraryFunction_register(core_cache.token_core_None_new, none_new_libraryFunction);
     mvl->libraryFunction_register(core_cache.token_core_None_str, none_str_libraryFunction);
-    mvl->libraryFunction_register(core_cache.token_core_None_equals, none_equals_libraryFunction);
     mvl->libraryFunction_register(core_cache.token_core_None_hash, none_hash_libraryFunction);
 }
 

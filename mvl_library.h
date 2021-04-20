@@ -42,6 +42,14 @@ extern "C" {
 struct mvl_obj;
 typedef struct mvl_obj mvl_obj;
 
+struct mvl_references_list
+{
+    // Can be null, if length is 0.
+    mvl_obj** references;
+    size_t length;
+};
+typedef struct mvl_references_list mvl_references_list;
+
 typedef uint64_t mvl_token;
 
 /////////////////////////
@@ -139,11 +147,10 @@ inline mvl_data null_out()
 
 // only responsible for freeing the native data; the interpreter will free the mvl_obj*
 typedef void (CALL_CONVENTION* mvl_object_free_callback_t)(mvl_obj* self);
-// Returns reference count.
-// Caller is responsible for freeing references_out array.
-// "references_out" is a pointer to an array of mvl_obj*.
-// *references_out must have been allocated using malloc() or calloc(), because it will be freed with free().
-typedef size_t (CALL_CONVENTION* mvl_object_getReferences_callback_t)(mvl_obj* self, mvl_obj*** references_out);
+// Returns references list.
+// Caller is responsible for freeing references member, if it's not null.
+// references member must have been allocated using malloc() or calloc(), because it will be freed with free().
+typedef mvl_references_list (CALL_CONVENTION* mvl_object_getReferences_callback_t)(mvl_obj* self);
 
 struct mvl_type_register_callbacks {
     // if this is NULL, then that's asserting there is no data pointer
@@ -202,7 +209,6 @@ typedef mvl_obj*(CALL_CONVENTION* mvl_object_create_t)(mvl_token type_name, mvl_
 typedef void    (CALL_CONVENTION* mvl_nativeFunction_register_t)(mvl_token nativeFunction_identifier, mvl_nativeFunction_t function_callback);
 typedef void    (CALL_CONVENTION* mvl_libraryFunction_register_t)(mvl_token libraryFunction_identifier, mvl_libraryFunction_t function_callback);
 typedef mvl_libraryFunction_t(CALL_CONVENTION* mvl_libraryFunction_get_t)(mvl_token libraryFunction_identifier);
-
 
 ///////////////////////
 // Type Registration //

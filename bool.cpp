@@ -71,7 +71,7 @@ static bool check_bool_self(mvl_obj* obj)
 {
     bool is_bool = mvl->typeof(obj) == core_cache.token_core_Bool;
     if (!is_bool)
-        mvl->error("Expected self to be type core.Bool");
+        mvl->error("self is not type core.Bool");
 
     return is_bool;
 }
@@ -80,12 +80,12 @@ static bool check_bool_other(mvl_obj* obj)
 {
     bool is_bool = mvl->typeof(obj) == core_cache.token_core_Bool;
     if (!is_bool)
-        mvl->error("Expected other to be type core.Bool");
+        mvl->error("other is not type core.Bool");
 
     return is_bool;
 }
 
-mvl_obj* CALL_CONVENTION bool_str(mvl_obj* args)
+mvl_obj* CALL_CONVENTION bool_str_nativeFunction(mvl_obj* args)
 {
     auto self = extract_1_args(args);
     if (mvl->is_error())
@@ -98,9 +98,8 @@ mvl_obj* CALL_CONVENTION bool_str(mvl_obj* args)
     return core_string_new_borrow(string, 0); // TODO: set length
 }
 
-mvl_obj* CALL_CONVENTION bool_equals(mvl_obj* args)
+mvl_obj* CALL_CONVENTION bool_equals_nativeFunction(mvl_obj* args)
 {
-    
     auto [self, other] = extract_2_args(args);
     if (mvl->is_error())
         return nullptr;
@@ -108,13 +107,16 @@ mvl_obj* CALL_CONVENTION bool_equals(mvl_obj* args)
     if (!check_bool_self(self))
         return nullptr;
 
-    bool val = core_bool_equals(self, other);
+    bool other_is_bool = mvl->typeof(other) == core_cache.token_core_Bool;
+    if (!other_is_bool)
+        return core_bool_new(false);
+
+    bool val = core_bool_getVal(self) == core_bool_getVal(other);
     return core_bool_new(val);
 }
 
-mvl_obj* CALL_CONVENTION bool_hash(mvl_obj* args)
+mvl_obj* CALL_CONVENTION bool_hash_nativeFunction(mvl_obj* args)
 {
-    
     auto self = extract_1_args(args);
     if (mvl->is_error())
         return nullptr;
@@ -126,9 +128,8 @@ mvl_obj* CALL_CONVENTION bool_hash(mvl_obj* args)
     return core_double_new(static_cast<double>(hash));
 }
 
-mvl_obj* CALL_CONVENTION bool_and(mvl_obj* args)
+mvl_obj* CALL_CONVENTION bool_and_nativeFunction(mvl_obj* args)
 {
-    
     auto [self, other] = extract_2_args(args);
     if (mvl->is_error())
         return nullptr;
@@ -140,9 +141,8 @@ mvl_obj* CALL_CONVENTION bool_and(mvl_obj* args)
     return core_bool_new(val);
 }
 
-mvl_obj* CALL_CONVENTION bool_or(mvl_obj* args)
+mvl_obj* CALL_CONVENTION bool_or_nativeFunction(mvl_obj* args)
 {
-    
     auto [self, other] = extract_2_args(args);
     if (mvl->is_error())
         return nullptr;
@@ -154,7 +154,7 @@ mvl_obj* CALL_CONVENTION bool_or(mvl_obj* args)
     return core_bool_new(val);
 }
 
-mvl_obj* CALL_CONVENTION bool_not(mvl_obj* args)
+mvl_obj* CALL_CONVENTION bool_not_nativeFunction(mvl_obj* args)
 {
     
     auto self = extract_1_args(args);
@@ -181,17 +181,16 @@ void bool_register_libraryFunctions()
 {
     mvl->libraryFunction_register(core_cache.token_core_Bool_new, bool_new_libraryFunction);
     mvl->libraryFunction_register(core_cache.token_core_Bool_str, bool_str_libraryFunction);
-    mvl->libraryFunction_register(core_cache.token_core_Bool_equals, bool_equals_libraryFunction);
     mvl->libraryFunction_register(core_cache.token_core_Bool_hash, bool_hash_libraryFunction);
     mvl->libraryFunction_register(core_cache.token_core_Bool_getVal, bool_getVal_libraryFunction);
 }
 
 void bool_register_nativeFunctions()
 {
-    mvl->nativeFunction_register(core_cache.token_core_Bool_mStr, bool_str);
-    mvl->nativeFunction_register(core_cache.token_core_Bool_mEquals, bool_equals);
-    mvl->nativeFunction_register(core_cache.token_core_Bool_mHash, bool_hash);
-    mvl->nativeFunction_register(core_cache.token_core_Bool_and, bool_and);
-    mvl->nativeFunction_register(core_cache.token_core_Bool_or, bool_or);
-    mvl->nativeFunction_register(core_cache.token_core_Bool_not, bool_not);
+    mvl->nativeFunction_register(core_cache.token_core_Bool_mStr, bool_str_nativeFunction);
+    mvl->nativeFunction_register(core_cache.token_core_Bool_mEquals, bool_equals_nativeFunction);
+    mvl->nativeFunction_register(core_cache.token_core_Bool_mHash, bool_hash_nativeFunction);
+    mvl->nativeFunction_register(core_cache.token_core_Bool_and, bool_and_nativeFunction);
+    mvl->nativeFunction_register(core_cache.token_core_Bool_or, bool_or_nativeFunction);
+    mvl->nativeFunction_register(core_cache.token_core_Bool_not, bool_not_nativeFunction);
 }
