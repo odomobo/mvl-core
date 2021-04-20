@@ -12,60 +12,35 @@ struct NativeFunction
     mvl_obj* help_text;
 };
 
-// self.new(token* nativeFunction_token, mvl_nativeFunction_t* nativeFunction_fp, mvl_obj* signature, mvl_obj* help_text)
-void CALL_CONVENTION nativeFunction_new(mvl_obj* self, void* a, void* b, void* c, void* d)
+static NativeFunction* get_data(mvl_obj* self)
 {
-    
-    auto nativeFunction_token = *static_cast<mvl_token*>(a);
-    auto nativeFunction_fp = *static_cast<mvl_nativeFunction_t*>(b);
-    auto signature = static_cast<mvl_obj*>(c);
-    auto help_text = static_cast<mvl_obj*>(d);
+    return static_cast<NativeFunction*>(mvl->object_getData(self).voidp_val);
+}
 
-    NativeFunction* data = nullptr;
-    try {
-        data = new NativeFunction{ nativeFunction_token, nativeFunction_fp, signature, help_text };
-    } catch (std::bad_alloc&) {
-        error_memory(); // terminates the application
-    }
-
-    mvl->object_setData(self, data);
-    
+static NativeFunction* get_data(mvl_data self)
+{
+    return get_data(self.mvl_obj_val);
 }
 
 void CALL_CONVENTION nativeFunction_free(mvl_obj* self)
 {
-    
-    auto data = static_cast<NativeFunction*>(mvl->object_getData(self));
+    auto data = get_data(self);
     delete data;
-    
 }
 
-// self.getNativeData(mvl_nativeFunction_t* nativeFunction_out, ...);
-void CALL_CONVENTION nativeFunction_getNativeData(mvl_obj* self, void* a, void* b, void* c, void* d)
+mvl_references_list CALL_CONVENTION nativeFunction_getReferences(mvl_obj* self)
 {
-    
-    NativeFunction* dataPointer = static_cast<NativeFunction*>(mvl->object_getData(self));
-    auto a_nativeFunction_fp = static_cast<mvl_nativeFunction_t*>(a);
-    auto nativeFunction_fp_val = dataPointer->nativeFunction_fp;
-    *a_nativeFunction_fp = nativeFunction_fp_val;
-    
-}
-
-size_t CALL_CONVENTION nativeFunction_getReferences(mvl_obj* self, mvl_obj*** references_out)
-{
-    
-    NativeFunction* dataPointer = static_cast<NativeFunction*>(mvl->object_getData(self));
+    NativeFunction* dataPointer = get_data(self);
 
     size_t const length = 2;
-    *references_out = static_cast<mvl_obj**>(calloc(length, sizeof(mvl_obj*)));
-    if (*references_out == nullptr)
+    mvl_obj** references = static_cast<mvl_obj**>(calloc(length, sizeof(mvl_obj*)));
+    if (references == nullptr)
         error_memory(); // terminates the application
     
-    *references_out[0] = dataPointer->signature;
-    *references_out[1] = dataPointer->help_text;
+    references[0] = dataPointer->signature;
+    references[1] = dataPointer->help_text;
 
-    
-    return length;
+    return {references, length};
 }
 
 mvl_type_register_callbacks const nativeFunction_registration = {
@@ -73,27 +48,57 @@ mvl_type_register_callbacks const nativeFunction_registration = {
     nativeFunction_getReferences
 };
 
-////////////////////////
-// Internal Functions //
-////////////////////////
+///////////////////////
+// Library Functions //
+///////////////////////
 
-mvl_obj* nativeFunction_new_internal(mvl_token nativeFunction_token, mvl_nativeFunction_t nativeFunction_fp, char const* signature, char const* help_text)
+
+
+// mvl_obj_val new(mvl_token_val nativeFunction_token, mvl_nativeFunction_val nativeFunction_fp, mvl_obj* signature, mvl_obj* help_text)
+// Both signature and help_text can be either core.String or core.None
+mvl_data CALL_CONVENTION nativeFunction_new_libraryFunction(mvl_data nativeFunction_token, mvl_data nativeFunction_fp, mvl_data signature, mvl_data help_text)
 {
-    mvl_obj* signature_obj;
-    if (signature == nullptr)
-        signature_obj = core_none_new();
-    else
-        signature_obj = core_string_new_borrow(signature, 0);
+    NativeFunction* data = nullptr;
+    try {
+        data = new NativeFunction{ nativeFunction_token.mvl_token_val, nativeFunction_fp.mvl_nativeFunction_val, signature.mvl_obj_val, help_text.mvl_obj_val };
+    }
+    catch (std::bad_alloc&) {
+        error_memory(); // terminates the application
+    }
 
-    mvl_obj* help_text_obj;
-    if (help_text == nullptr)
-        help_text_obj = core_none_new();
-    else
-        help_text_obj = core_string_new_borrow(help_text, 0);
+    return mvl_obj_val(mvl->object_create(core_cache.token_core_NativeFunction, voidp_val(data)));
+}
 
-    auto ret = mvl->object_new(core_cache.token_core_NativeFunction, &nativeFunction_token, &nativeFunction_fp, signature_obj, help_text_obj);
-    
-    return ret;
+// mvl_token_val getToken(mvl_obj_val self, ...)
+// Self must be core.NativeFunction
+mvl_data CALL_CONVENTION nativeFunction_getToken_libraryFunction(mvl_data self, mvl_data b, mvl_data c, mvl_data d)
+{
+    auto data = get_data(self);
+    return mvl_token_val(data->nativeFunction_token);
+}
+
+// mvl_nativeFunction_val getNativeFunction(mvl_obj_val self, ...)
+// Self must be core.NativeFunction
+mvl_data CALL_CONVENTION nativeFunction_getNativeFunction_libraryFunction(mvl_data self, mvl_data b, mvl_data c, mvl_data d)
+{
+    auto data = get_data(self);
+    return mvl_nativeFunction_val(data->nativeFunction_fp);
+}
+
+// mvl_obj_val getSignature(mvl_obj_val self, ...)
+// Self must be core.NativeFunction
+mvl_data CALL_CONVENTION nativeFunction_getSignature_libraryFunction(mvl_data self, mvl_data b, mvl_data c, mvl_data d)
+{
+    auto data = get_data(self);
+    return mvl_obj_val(data->signature);
+}
+
+// mvl_obj_val getHelpText(mvl_obj_val self, ...)
+// Self must be core.NativeFunction
+mvl_data CALL_CONVENTION nativeFunction_getHelpText_libraryFunction(mvl_data self, mvl_data b, mvl_data c, mvl_data d)
+{
+    auto data = get_data(self);
+    return mvl_obj_val(data->help_text);
 }
 
 //////////////////////
@@ -113,6 +118,11 @@ void CALL_CONVENTION nativeFunction_register_type()
 
 void nativeFunction_register_libraryFunctions()
 {
+    mvl->libraryFunction_register(core_cache.token_core_NativeFunction_new, nativeFunction_new_libraryFunction);
+    mvl->libraryFunction_register(core_cache.token_core_NativeFunction_getToken, nativeFunction_getToken_libraryFunction);
+    mvl->libraryFunction_register(core_cache.token_core_NativeFunction_getNativeFunction, nativeFunction_getNativeFunction_libraryFunction);
+    mvl->libraryFunction_register(core_cache.token_core_NativeFunction_getSignature, nativeFunction_getSignature_libraryFunction);
+    mvl->libraryFunction_register(core_cache.token_core_NativeFunction_getHelpText, nativeFunction_getHelpText_libraryFunction);
     // TODO
 }
 

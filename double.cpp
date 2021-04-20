@@ -38,14 +38,17 @@ mvl_data CALL_CONVENTION double_getVal_libraryFunction(mvl_data self, mvl_data b
 
 void double_register_type()
 {
-    
     mvl->type_register(core_cache.token_core_Double, double_registration);
-    
+}
+
+void double_register_libraryFunctions()
+{
+    mvl->libraryFunction_register(core_cache.token_core_Double_new, double_new_libraryFunction);
+    mvl->libraryFunction_register(core_cache.token_core_Double_getVal , double_getVal_libraryFunction);
+    // TODO
 }
 
 void double_register_nativeFunctions()
 {
-    
     // TODO
-    
 }

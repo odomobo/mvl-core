@@ -26,11 +26,11 @@ mvl_data CALL_CONVENTION none_str_libraryFunction(mvl_data self, mvl_data b, mvl
     return const_string_val("none");
 }
 
-// uint32_val hash(mvl_obj_val self, ...)
+// uint64_val hash(mvl_obj_val self, ...)
 // assumes self is core.None
 mvl_data CALL_CONVENTION none_hash_libraryFunction(mvl_data self, mvl_data b, mvl_data c, mvl_data d)
 {
-    return uint32_val(0); // TODO: what value to use for hash?
+    return uint64_val(0); // TODO: what value to use for hash?
 }
 
 //////////////////////
@@ -82,7 +82,7 @@ mvl_obj* CALL_CONVENTION none_hash(mvl_obj* args)
     if (!check_none_self(self))
         return nullptr;
 
-    uint32_t hash = core_none_hash(self);
+    uint64_t hash = core_none_hash(self);
     return core_double_new(static_cast<double>(hash));
 }
 

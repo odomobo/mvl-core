@@ -74,6 +74,7 @@ union mvl_data
     bool bool_val;
     char* string_val;
     char const* const_string_val;
+    mvl_token mvl_token_val;
     mvl_obj* mvl_obj_val;
     mvl_obj** mvl_obj_array_val;
     mvl_nativeFunction_t mvl_nativeFunction_val;
@@ -92,6 +93,7 @@ union mvl_data
     bool* bool_out;
     char** string_out;
     char const** const_string_out;
+    mvl_token* mvl_token_out;
     mvl_obj** mvl_obj_out;
     mvl_obj*** mvl_obj_array_out;
     mvl_nativeFunction_t* mvl_nativeFunction_out;
@@ -124,6 +126,7 @@ MVL_DATA_HELPER(double, double)
 MVL_DATA_HELPER(bool, bool)
 MVL_DATA_HELPER(char*, string)
 MVL_DATA_HELPER(char const*, const_string)
+MVL_DATA_HELPER(mvl_token, mvl_token)
 MVL_DATA_HELPER(mvl_obj*, mvl_obj)
 MVL_DATA_HELPER(mvl_obj**, mvl_obj_array)
 MVL_DATA_HELPER(mvl_nativeFunction_t, mvl_nativeFunction)

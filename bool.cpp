@@ -44,16 +44,16 @@ mvl_data CALL_CONVENTION bool_equals_libraryFunction(mvl_data self, mvl_data oth
     return bool_val(self_val == other_val);
 }
 
-// uint32_val hash(mvl_obj_val self, ...)
+// uint64_val hash(mvl_obj_val self, ...)
 // assumes self is actually of type core.Bool
 mvl_data CALL_CONVENTION bool_hash_libraryFunction(mvl_data self, mvl_data b, mvl_data c, mvl_data d)
 {
     // TODO: what value to use for hash values?
     bool val = mvl->object_getData(self.mvl_obj_val).bool_val;
     if (val)
-        return uint32_val(0);
+        return uint64_val(0);
     else
-        return uint32_val(1);
+        return uint64_val(1);
 }
 
 // bool_val getVal(mvl_obj_val self, ...)
@@ -124,7 +124,7 @@ mvl_obj* CALL_CONVENTION bool_hash_nativeFunction(mvl_obj* args)
     if (!check_bool_self(self))
         return nullptr;
 
-    uint32_t hash = core_bool_hash(self);
+    uint64_t hash = core_bool_hash(self);
     return core_double_new(static_cast<double>(hash));
 }
 

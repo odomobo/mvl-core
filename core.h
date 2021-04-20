@@ -57,7 +57,14 @@ struct CoreCache
     mvl_token token_core_List_mLength;
 
     mvl_token token_core_NativeFunction;
+    mvl_token token_core_NativeFunction_new;
+    mvl_token token_core_NativeFunction_getToken;
+    mvl_token token_core_NativeFunction_getNativeFunction;
+    mvl_token token_core_NativeFunction_getSignature;
+    mvl_token token_core_NativeFunction_getHelpText;
 
+    //////////////////////////////////////////////////
+    
     mvl_libraryFunction_t none_new;
     mvl_libraryFunction_t none_str;
     mvl_libraryFunction_t none_hash;
@@ -79,6 +86,13 @@ struct CoreCache
     mvl_libraryFunction_t list_getVal;
     mvl_libraryFunction_t list_get;
     mvl_libraryFunction_t list_length;
+
+
+    mvl_libraryFunction_t nativeFunction_new;
+    mvl_libraryFunction_t nativeFunction_getToken;
+    mvl_libraryFunction_t nativeFunction_getNativeFunction;
+    mvl_libraryFunction_t nativeFunction_getSignature;
+    mvl_libraryFunction_t nativeFunction_getHelpText;
 };
 typedef struct CoreCache CoreCache;
 
@@ -128,6 +142,11 @@ inline void core_init_tokens(mvl_library_api* mvl)
     core_cache.token_core_List_mLength = mvl->token_get("core.List$length");
 
     core_cache.token_core_NativeFunction = mvl->token_get("core.NativeFunction");
+    core_cache.token_core_NativeFunction_new = mvl->token_get("core.NativeFunction.new");
+    core_cache.token_core_NativeFunction_getToken = mvl->token_get("core.NativeFunction.getToken");
+    core_cache.token_core_NativeFunction_getNativeFunction = mvl->token_get("core.NativeFunction.getNativeFunction");
+    core_cache.token_core_NativeFunction_getSignature = mvl->token_get("core.NativeFunction.getSignature");
+    core_cache.token_core_NativeFunction_getHelpText = mvl->token_get("core.NativeFunction.getHelpText");
 }
 
 inline void core_init_libraryFunctions()
@@ -153,6 +172,13 @@ inline void core_init_libraryFunctions()
     core_cache.list_getVal = core_cache.mvl->libraryFunction_get(core_cache.token_core_List_getVal);
     core_cache.list_get = core_cache.mvl->libraryFunction_get(core_cache.token_core_List_get);
     core_cache.list_length = core_cache.mvl->libraryFunction_get(core_cache.token_core_List_length);
+
+
+    core_cache.nativeFunction_new = core_cache.mvl->libraryFunction_get(core_cache.token_core_NativeFunction_new);
+    core_cache.nativeFunction_getToken = core_cache.mvl->libraryFunction_get(core_cache.token_core_NativeFunction_getToken);
+    core_cache.nativeFunction_getNativeFunction = core_cache.mvl->libraryFunction_get(core_cache.token_core_NativeFunction_getNativeFunction);
+    core_cache.nativeFunction_getSignature = core_cache.mvl->libraryFunction_get(core_cache.token_core_NativeFunction_getSignature);
+    core_cache.nativeFunction_getHelpText = core_cache.mvl->libraryFunction_get(core_cache.token_core_NativeFunction_getHelpText);
 }
 
 inline void core_init(mvl_library_api* mvl)
@@ -176,9 +202,9 @@ inline char const* core_none_str(mvl_obj* self)
 }
 
 // assumes self is of type core.None
-inline uint32_t core_none_hash(mvl_obj* self)
+inline uint64_t core_none_hash(mvl_obj* self)
 {
-    return core_cache.none_hash(mvl_obj_val(self), unused(), unused(), unused()).uint32_val;
+    return core_cache.none_hash(mvl_obj_val(self), unused(), unused(), unused()).uint64_val;
 }
 
 //////////////////////////////
@@ -203,9 +229,9 @@ inline char const* core_bool_str(mvl_obj* self)
 }
 
 // assumes self is of type core.Bool
-inline uint32_t core_bool_hash(mvl_obj* self)
+inline uint64_t core_bool_hash(mvl_obj* self)
 {
-    return core_cache.bool_hash(mvl_obj_val(self), unused(), unused(), unused()).uint32_val;
+    return core_cache.bool_hash(mvl_obj_val(self), unused(), unused(), unused()).uint64_val;
 }
 
 ////////////////////////////////
@@ -289,6 +315,23 @@ inline size_t core_list_length(mvl_obj* self)
 //////////////////////////////
 //      NativeFunction      //
 //////////////////////////////
+
+inline mvl_obj* core_nativeFunction_new(mvl_token nativeFunction_token, mvl_nativeFunction_t nativeFunction_fp, char const* signature, char const* help_text)
+{
+    mvl_obj* signature_obj;
+    if (signature == nullptr)
+        signature_obj = core_none_new();
+    else
+        signature_obj = core_string_new_borrow(signature, 0);
+
+    mvl_obj* help_text_obj;
+    if (help_text == nullptr)
+        help_text_obj = core_none_new();
+    else
+        help_text_obj = core_string_new_borrow(help_text, 0);
+
+    return core_cache.nativeFunction_new(mvl_token_val(nativeFunction_token), mvl_nativeFunction_val(nativeFunction_fp), mvl_obj_val(signature_obj), mvl_obj_val(help_text_obj)).mvl_obj_val;
+}
 
 #ifdef __cplusplus
 }

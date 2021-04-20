@@ -21,7 +21,7 @@ static void register_libraryFunctions()
     double_register_libraryFunctions();
     string_register_libraryFunctions();
     list_register_libraryFunctions();
-    libraryFunction_register_libraryFunctions();
+    nativeFunction_register_libraryFunctions();
 }
 
 static void register_nativeFunctions()
@@ -48,7 +48,7 @@ void load(mvl_library_api* mvl_api)
 
     register_libraryFunctions();
     // must be called after registering library functions, but should be called as soon as possible
-    core_init_libraryFunctions(mvl_api);
+    core_init_libraryFunctions();
 
     register_nativeFunctions();
     set_globals();
