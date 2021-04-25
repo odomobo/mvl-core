@@ -65,34 +65,34 @@ struct CoreCache
 
     //////////////////////////////////////////////////
     
-    mvl_libraryFunction_t none_new;
-    mvl_libraryFunction_t none_str;
-    mvl_libraryFunction_t none_hash;
+    mvl_libraryFunction_fp none_new;
+    mvl_libraryFunction_fp none_str;
+    mvl_libraryFunction_fp none_hash;
 
-    mvl_libraryFunction_t bool_new;
-    mvl_libraryFunction_t bool_getVal;
-    mvl_libraryFunction_t bool_str;
-    mvl_libraryFunction_t bool_hash;
+    mvl_libraryFunction_fp bool_new;
+    mvl_libraryFunction_fp bool_getVal;
+    mvl_libraryFunction_fp bool_str;
+    mvl_libraryFunction_fp bool_hash;
     
-    mvl_libraryFunction_t double_new;
-    mvl_libraryFunction_t double_getVal;
+    mvl_libraryFunction_fp double_new;
+    mvl_libraryFunction_fp double_getVal;
 
 
-    mvl_libraryFunction_t string_new;
-    mvl_libraryFunction_t string_getVal;
+    mvl_libraryFunction_fp string_new;
+    mvl_libraryFunction_fp string_getVal;
 
 
-    mvl_libraryFunction_t list_new;
-    mvl_libraryFunction_t list_getVal;
-    mvl_libraryFunction_t list_get;
-    mvl_libraryFunction_t list_length;
+    mvl_libraryFunction_fp list_new;
+    mvl_libraryFunction_fp list_getVal;
+    mvl_libraryFunction_fp list_get;
+    mvl_libraryFunction_fp list_length;
 
 
-    mvl_libraryFunction_t nativeFunction_new;
-    mvl_libraryFunction_t nativeFunction_getToken;
-    mvl_libraryFunction_t nativeFunction_getNativeFunction;
-    mvl_libraryFunction_t nativeFunction_getSignature;
-    mvl_libraryFunction_t nativeFunction_getHelpText;
+    mvl_libraryFunction_fp nativeFunction_new;
+    mvl_libraryFunction_fp nativeFunction_getToken;
+    mvl_libraryFunction_fp nativeFunction_getNativeFunction;
+    mvl_libraryFunction_fp nativeFunction_getSignature;
+    mvl_libraryFunction_fp nativeFunction_getHelpText;
 };
 typedef struct CoreCache CoreCache;
 
@@ -316,7 +316,7 @@ inline size_t core_list_length(mvl_obj* self)
 //      NativeFunction      //
 //////////////////////////////
 
-inline mvl_obj* core_nativeFunction_new(mvl_token nativeFunction_token, mvl_nativeFunction_t nativeFunction_fp, char const* signature, char const* help_text)
+inline mvl_obj* core_nativeFunction_new(mvl_token nativeFunction_token, mvl_nativeFunction_fp nativeFunction_fp, char const* signature, char const* help_text)
 {
     mvl_obj* signature_obj;
     if (signature == nullptr)

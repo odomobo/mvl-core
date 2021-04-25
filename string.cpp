@@ -21,21 +21,17 @@ struct String
       : length{length_arg},
         copy_mode{static_cast<CopyMode>(copy_mode_arg)}
     {
-        
         if (copy_mode == CopyMode::Copy)
         {
-            string = static_cast<char*>(malloc(length + 1));
-            if (string == nullptr)
-                error_memory(); // terminates the application
+            string = retry_malloc<char*>(length + 1);
 
-            string[length] = 0;
             memcpy(string, string_arg, length);
+            string[length] = 0;
         }
         else
         {
             string = string_arg;
         }
-        
     }
 
     ~String()
@@ -47,9 +43,19 @@ struct String
     }
 };
 
+static String* get_data(mvl_obj* self)
+{
+    return static_cast<String*>(mvl->object_getData(self).voidp_val);
+}
+
+static String* get_data(mvl_data self)
+{
+    return get_data(self.mvl_obj_val);
+}
+
 void CALL_CONVENTION string_free(mvl_obj* self)
 {
-    auto data = static_cast<String*>(mvl->object_getData(self).voidp_val);
+    auto data = get_data(self);
     delete data;
 }
 
@@ -78,13 +84,7 @@ mvl_type_register_callbacks const string_registration = {
 // Such a string must have been allocated with malloc() or calloc(), because it will be freed with free().
 mvl_data CALL_CONVENTION string_new_libraryFunction(mvl_data string, mvl_data length, mvl_data copy_mode, mvl_data d)
 {
-    String* data = nullptr;
-    try {
-        data = new String{ string.string_val, length.size_val, copy_mode.int_val };
-    }
-    catch (std::bad_alloc&) {
-        error_memory(); // terminates the application
-    }
+    String* data = retry_new<String>( string.string_val, length.size_val, copy_mode.int_val );
 
     return mvl_obj_val(mvl->object_create(core_cache.token_core_String, voidp_val(data)));
 }
@@ -94,7 +94,7 @@ mvl_data CALL_CONVENTION string_new_libraryFunction(mvl_data string, mvl_data le
 // If length_out is null_out(), and it simply won't be assigned
 mvl_data CALL_CONVENTION string_getVal_libraryFunction(mvl_data self, mvl_data length_out, mvl_data c, mvl_data d)
 {
-    auto data = static_cast<String*> (mvl->object_getData(self.mvl_obj_val).voidp_val);
+    auto data = get_data(self);
     if (length_out.size_out != nullptr)
         *length_out.size_out = data->length;
 

@@ -1,11 +1,5 @@
 #include "pch.h"
 
-void error_memory()
-{
-    mvl->error_memory();
-    throw std::exception{}; // should not be reached
-}
-
 // assumes args is a core.List
 void verify_0_args(mvl_obj* args)
 {

@@ -17,34 +17,52 @@ struct List
     }
 };
 
+static List* get_data(mvl_obj* self)
+{
+    return static_cast<List*>(mvl->object_getData(self).voidp_val);
+}
+
+static List* get_data(mvl_data self)
+{
+    return get_data(self.mvl_obj_val);
+}
+
 void CALL_CONVENTION list_free(mvl_obj* self)
 {
-    auto data = static_cast<List*>(mvl->object_getData(self).voidp_val);
+    auto data = get_data(self);
     delete data;
 }
 
-mvl_references_list CALL_CONVENTION list_getReferences(mvl_obj* self)
+mvl_reference_iterator list_getReferenceIterator(mvl_obj* self)
 {
-    List* dataPointer = static_cast<List*>(mvl->object_getData(self).voidp_val);
+    return { size_val(0), self };
+}
 
-    size_t length = dataPointer->data.size();
-    mvl_obj** references = nullptr;
+mvl_obj* list_getNextReference(mvl_reference_iterator* iter)
+{
+    auto data = get_data(iter->self);
+    size_t index = iter->data.size_val;
 
-    if (length != 0)
+    mvl_obj* ret = nullptr;
+    if (index < data->data.size())
     {
-        references = static_cast<mvl_obj**>(calloc(length, sizeof(mvl_obj*)));
-        if (references == nullptr)
-            error_memory();
-    
-        std::copy(std::begin(dataPointer->data), std::end(dataPointer->data), references);
+        ret = data->data[index];
+        mvl->internalReference_increment(ret);
+        iter->data = size_val(index + 1);
     }
+    return ret;
+}
 
-    return {references, length};
+void list_freeReferenceIterator(mvl_reference_iterator* iter)
+{
+    // nothing to free
 }
 
 mvl_type_register_callbacks const list_registration = {
     list_free,
-    list_getReferences
+    list_getReferenceIterator,
+    list_getNextReference,
+    list_freeReferenceIterator,
 };
 
 ///////////////////////
@@ -56,13 +74,7 @@ mvl_type_register_callbacks const list_registration = {
 // Note that if length is 0, then data is not even accessed.
 mvl_data CALL_CONVENTION list_new_libraryFunction(mvl_data list_data, mvl_data length, mvl_data c, mvl_data d)
 {
-    List* native_data = nullptr;
-    try {
-        native_data = new List{ list_data.mvl_obj_array_val, length.size_val };
-    }
-    catch (std::bad_alloc&) {
-        error_memory(); // terminates the application
-    }
+    List* native_data = retry_new<List>( list_data.mvl_obj_array_val, length.size_val );
 
     return mvl_obj_val(mvl->object_create(core_cache.token_core_List, voidp_val(native_data)));
 }
@@ -72,9 +84,13 @@ mvl_data CALL_CONVENTION list_new_libraryFunction(mvl_data list_data, mvl_data l
 // Borrows a reference to object array. Only valid until list is modified or freed.
 mvl_data CALL_CONVENTION list_getVal_libraryFunction(mvl_data self, mvl_data length_out, mvl_data c, mvl_data d)
 {
-    List* native_data = static_cast<List*>(mvl->object_getData(self.mvl_obj_val).voidp_val);
+    List* native_data = get_data(self);
+    size_t length = native_data->data.size();
     if (length_out.size_out != nullptr)
-        *length_out.size_out = native_data->data.size();
+        *length_out.size_out = length;
+
+    for (size_t i = 0; i < length; i++)
+        mvl->internalReference_increment(native_data->data[i]);
 
     return mvl_obj_array_val(native_data->data.data());
 }
@@ -84,15 +100,17 @@ mvl_data CALL_CONVENTION list_getVal_libraryFunction(mvl_data self, mvl_data len
 // Assumes that self is long enough that "index" is a valid index.
 mvl_data CALL_CONVENTION list_get_libraryFunction(mvl_data self, mvl_data index, mvl_data c, mvl_data d)
 {
-    List* native_data = static_cast<List*>(mvl->object_getData(self.mvl_obj_val).voidp_val);
-    return mvl_obj_val(native_data->data[index.size_val]);
+    List* native_data = get_data(self);
+    auto element = native_data->data[index.size_val];
+    mvl->internalReference_increment(element);
+    return mvl_obj_val(element);
 }
 
 // size_val length(mvl_obj_val self,...)
 // Assumes self is core.List
 mvl_data CALL_CONVENTION list_length_libraryFunction(mvl_data self, mvl_data index, mvl_data c, mvl_data d)
 {
-    List* native_data = static_cast<List*>(mvl->object_getData(self.mvl_obj_val).voidp_val);
+    List* native_data = get_data(self);
     return size_val(native_data->data.size());
 }
 
@@ -119,7 +137,7 @@ mvl_obj* CALL_CONVENTION list_length(mvl_obj* args)
         return nullptr;
 
     size_t length = core_list_length(self);
-    return core_double_new(length);
+    return core_double_new(static_cast<double>(length));
 }
 
 ////////////////////////////
