@@ -69,14 +69,7 @@ mvl_data CALL_CONVENTION bool_getVal_libraryFunction(mvl_data self, mvl_data b, 
 
 static bool check_bool(mvl_obj* obj, char const* name)
 {
-    bool is_bool = mvl->typeof(obj) == core_cache.token_core_Bool;
-    if (!is_bool)
-    {
-        std::string message = std::string{ name } + " is not type core.Bool; instead it was " + std::string{ mvl->token_toString(mvl->typeof(obj)) };
-        mvl->error(message.c_str());
-    }
-
-    return is_bool;
+    return check_type(obj, name, core_cache.token_core_Bool);
 }
 
 mvl_obj* CALL_CONVENTION bool_str_nativeFunction(mvl_obj* args)

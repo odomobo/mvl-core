@@ -39,14 +39,7 @@ mvl_data CALL_CONVENTION none_hash_libraryFunction(mvl_data self, mvl_data b, mv
 
 static bool check_none_self(mvl_obj* obj)
 {
-    bool is_none = mvl->typeof(obj) == core_cache.token_core_None;
-    if (!is_none)
-    {
-        std::string message = "self is not type core.None; instead it was " + std::string{ mvl->token_toString(mvl->typeof(obj)) };
-        mvl->error(message.c_str());
-    }
-
-    return is_none;
+    return check_type(obj, "self", core_cache.token_core_None);
 }
 
 mvl_obj* CALL_CONVENTION none_str(mvl_obj* args)

@@ -120,14 +120,7 @@ mvl_data CALL_CONVENTION list_length_libraryFunction(mvl_data self, mvl_data ind
 
 static bool check_list(mvl_obj* obj, char const* name)
 {
-    bool is_list = mvl->typeof(obj) == core_cache.token_core_List;
-    if (!is_list)
-    {
-        std::string message = std::string{ name } + " is not type core.List; instead it was " + std::string{ mvl->token_toString(mvl->typeof(obj)) };
-        mvl->error(message.c_str());
-    }
-
-    return is_list;
+    return check_type(obj, name, core_cache.token_core_List);
 }
 
 mvl_obj* CALL_CONVENTION list_length(mvl_obj* args)

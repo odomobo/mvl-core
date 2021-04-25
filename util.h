@@ -7,6 +7,7 @@ void verify_1_args(mvl_obj* args);
 mvl_obj* extract_1_args(mvl_obj* args);
 std::array<mvl_obj*, 2> extract_2_args(mvl_obj* args);
 std::array<mvl_obj*, 3> extract_3_args(mvl_obj* args);
+bool check_type(mvl_obj* obj, char const* arg_name, mvl_token type);
 
 // The first attempt after a failed malloc should be to run GC and retry.
 // After that, terminate the application with mvl_error_memory().

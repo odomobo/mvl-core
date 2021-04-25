@@ -100,3 +100,17 @@ std::array<mvl_obj*, 3> extract_3_args(mvl_obj* args)
 
     return { arg0, arg1, arg2 };
 }
+
+// Checks if the object is the correct type; if not, generates a descriptive error message.
+// Returns true on correct type, and false otherwise.
+bool check_type(mvl_obj* obj, char const* arg_name, mvl_token type)
+{
+    bool is_type = mvl->typeof(obj) == type;
+    if (!is_type)
+    {
+        std::string message = "Argument \"" + std::string{ arg_name } + "\" was expected to be of type " + std::string{ mvl->token_toString(type) } + "; instead it was " + std::string{ mvl->token_toString(mvl->typeof(obj)) };
+        mvl->error(message.c_str());
+    }
+
+    return is_type;
+}
