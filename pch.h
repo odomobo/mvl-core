@@ -9,6 +9,7 @@
 
 // add headers that you want to pre-compile here
 #include "mvl_library.h"
+#include "defer.h"
 #include "core.h"
 #include "dllmain.h"
 #include "util.h"

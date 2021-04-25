@@ -67,20 +67,14 @@ mvl_data CALL_CONVENTION bool_getVal_libraryFunction(mvl_data self, mvl_data b, 
 // Method Functions //
 //////////////////////
 
-static bool check_bool_self(mvl_obj* obj)
+static bool check_bool(mvl_obj* obj, char const* name)
 {
     bool is_bool = mvl->typeof(obj) == core_cache.token_core_Bool;
     if (!is_bool)
-        mvl->error("self is not type core.Bool");
-
-    return is_bool;
-}
-
-static bool check_bool_other(mvl_obj* obj)
-{
-    bool is_bool = mvl->typeof(obj) == core_cache.token_core_Bool;
-    if (!is_bool)
-        mvl->error("other is not type core.Bool");
+    {
+        std::string message = std::string{ name } + " is not type core.Bool; instead it was " + std::string{ mvl->token_toString(mvl->typeof(obj)) };
+        mvl->error(message.c_str());
+    }
 
     return is_bool;
 }
@@ -91,7 +85,9 @@ mvl_obj* CALL_CONVENTION bool_str_nativeFunction(mvl_obj* args)
     if (mvl->is_error())
         return nullptr;
 
-    if (!check_bool_self(self))
+    defer (mvl->internalReference_decrement(self));
+
+    if (!check_bool(self, "self"))
         return nullptr;
 
     char const* string = core_bool_str(self);
@@ -104,7 +100,10 @@ mvl_obj* CALL_CONVENTION bool_equals_nativeFunction(mvl_obj* args)
     if (mvl->is_error())
         return nullptr;
 
-    if (!check_bool_self(self))
+    defer (mvl->internalReference_decrement(self));
+    defer (mvl->internalReference_decrement(other));
+
+    if (!check_bool(self, "self"))
         return nullptr;
 
     bool other_is_bool = mvl->typeof(other) == core_cache.token_core_Bool;
@@ -121,7 +120,9 @@ mvl_obj* CALL_CONVENTION bool_hash_nativeFunction(mvl_obj* args)
     if (mvl->is_error())
         return nullptr;
 
-    if (!check_bool_self(self))
+    defer (mvl->internalReference_decrement(self));
+
+    if (!check_bool(self, "self"))
         return nullptr;
 
     uint64_t hash = core_bool_hash(self);
@@ -134,7 +135,10 @@ mvl_obj* CALL_CONVENTION bool_and_nativeFunction(mvl_obj* args)
     if (mvl->is_error())
         return nullptr;
 
-    if (!check_bool_self(self) || !check_bool_other(self))
+    defer (mvl->internalReference_decrement(self));
+    defer (mvl->internalReference_decrement(other));
+
+    if (!check_bool(self, "self") || !check_bool(other, "other"))
         return nullptr;
 
     bool val = core_bool_getVal(self) && core_bool_getVal(other);
@@ -147,7 +151,10 @@ mvl_obj* CALL_CONVENTION bool_or_nativeFunction(mvl_obj* args)
     if (mvl->is_error())
         return nullptr;
 
-    if (!check_bool_self(self) || !check_bool_other(self))
+    defer (mvl->internalReference_decrement(self));
+    defer (mvl->internalReference_decrement(other));
+
+    if (!check_bool(self, "self") || !check_bool(other, "other"))
         return nullptr;
 
     bool val = core_bool_getVal(self) || core_bool_getVal(other);
@@ -156,12 +163,13 @@ mvl_obj* CALL_CONVENTION bool_or_nativeFunction(mvl_obj* args)
 
 mvl_obj* CALL_CONVENTION bool_not_nativeFunction(mvl_obj* args)
 {
-    
     auto self = extract_1_args(args);
     if (mvl->is_error())
         return nullptr;
 
-    if (!check_bool_self(self))
+    defer (mvl->internalReference_decrement(self));
+
+    if (!check_bool(self, "self"))
         return nullptr;
 
     bool val = !core_bool_getVal(self);
