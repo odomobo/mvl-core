@@ -8,6 +8,7 @@
 #include <cstdint>
 #else
 #include <stdint.h>
+#include <stdbool.h>
 #endif
 
 #ifdef _WIN32
@@ -20,10 +21,6 @@
 #else
 #define CALL_CONVENTION
 #define EXPORT(type) extern type
-#endif
-
-#ifndef __cplusplus
-#include <stdbool.h>
 #endif
 
 #ifdef __cplusplus
@@ -209,7 +206,7 @@ typedef mvl_obj*(CALL_CONVENTION* mvl_global_get_fp)(mvl_token identifier);
 typedef void    (CALL_CONVENTION* mvl_global_set_fp)(mvl_token identifier, mvl_obj* obj);
 typedef void    (CALL_CONVENTION* mvl_global_unset_fp)(mvl_token identifier);
 typedef int     (CALL_CONVENTION* mvl_global_exists_fp)(mvl_token identifier);
-// Returns length of "identifiers_out", which is also the number of globals. Caller is responsible for freeing "identifiers_out". "identifiers_out" is a pointer to an array of tokens.
+// Returns length of "identifiers_out", which is also the number of globals. Caller is responsible for freeing "identifiers_out" with free(). "identifiers_out" is a pointer to an array of tokens.
 typedef size_t  (CALL_CONVENTION* mvl_global_getAllIdentifiers_fp)(mvl_token** identifiers_out);
 
 ////////////////////////////////////////////
@@ -218,7 +215,7 @@ typedef size_t  (CALL_CONVENTION* mvl_global_getAllIdentifiers_fp)(mvl_token** i
 
 typedef mvl_data(CALL_CONVENTION* mvl_libraryFunction_fp)(mvl_data a, mvl_data b, mvl_data c, mvl_data d);
 
-// Used to get a new object of the specified type, from native data. This can be called across libraries.
+// Each type should have its own new function that calls this.
 typedef mvl_obj*(CALL_CONVENTION* mvl_object_create_fp)(mvl_token type_name, mvl_data data);
 typedef void    (CALL_CONVENTION* mvl_nativeFunction_register_fp)(mvl_token nativeFunction_identifier, mvl_nativeFunction_fp function_callback);
 typedef void    (CALL_CONVENTION* mvl_libraryFunction_register_fp)(mvl_token libraryFunction_identifier, mvl_libraryFunction_fp function_callback);

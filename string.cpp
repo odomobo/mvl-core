@@ -23,7 +23,7 @@ struct String
     {
         if (copy_mode == CopyMode::Copy)
         {
-            string = retry_malloc<char*>(length + 1);
+            string = retry_malloc<char*>(length+1);
 
             memcpy(string, string_arg, length);
             string[length] = 0;

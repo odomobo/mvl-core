@@ -14,6 +14,8 @@
 #include <string>
 #include <cstring>
 #include <map>
+#include <functional>
+#include <cmath>
 
 extern mvl_library_api* mvl;
 

@@ -42,6 +42,23 @@ struct CoreCache
     mvl_token token_core_Double;
     mvl_token token_core_Double_new;
     mvl_token token_core_Double_getVal;
+    mvl_token token_core_Double_str;
+    mvl_token token_core_Double_hash;
+    mvl_token token_core_Double_isInt;
+    mvl_token token_core_Double_canParse;
+    mvl_token token_core_Double_tryParse;
+    mvl_token token_core_Double_parse;
+
+    mvl_token token_core_Double_mStr;
+    mvl_token token_core_Double_mEquals;
+    mvl_token token_core_Double_mHash;
+    mvl_token token_core_Double_mGreaterThan;
+    mvl_token token_core_Double_mLessThan;
+    mvl_token token_core_Double_mAdd;
+    mvl_token token_core_Double_mSubtract;
+    mvl_token token_core_Double_mMultiply;
+    mvl_token token_core_Double_mDivide;
+    mvl_token token_core_Double_mNegate;
 
     mvl_token token_core_String;
     mvl_token token_core_String_new;
@@ -76,7 +93,11 @@ struct CoreCache
     
     mvl_libraryFunction_fp double_new;
     mvl_libraryFunction_fp double_getVal;
-
+    mvl_libraryFunction_fp double_str;
+    mvl_libraryFunction_fp double_hash;
+    mvl_libraryFunction_fp double_isInt;
+    mvl_libraryFunction_fp double_canParse;
+    mvl_libraryFunction_fp double_tryParse;
 
     mvl_libraryFunction_fp string_new;
     mvl_libraryFunction_fp string_getVal;
@@ -113,7 +134,7 @@ inline void core_init_tokens(mvl_library_api* mvl)
 
     core_cache.token_core_Bool = mvl->token_get("core.Bool");
     core_cache.token_core_Bool_new = mvl->token_get("core.Bool.new");
-    core_cache.token_core_Bool_getVal = mvl->token_get("core.Bool.getVal");
+    core_cache.token_core_Bool_getVal = mvl->token_get("core.Bool.get_val");
     core_cache.token_core_Bool_str = mvl->token_get("core.Bool.str");
     core_cache.token_core_Bool_hash = mvl->token_get("core.Bool.hash");
     core_cache.token_core_Bool_and = mvl->token_get("core.Bool.and");
@@ -126,15 +147,32 @@ inline void core_init_tokens(mvl_library_api* mvl)
 
     core_cache.token_core_Double = mvl->token_get("core.Double");
     core_cache.token_core_Double_new = mvl->token_get("core.Double.new");
-    core_cache.token_core_Double_getVal = mvl->token_get("core.Double.getVal");
+    core_cache.token_core_Double_getVal = mvl->token_get("core.Double.get_val");
+    core_cache.token_core_Double_str = mvl->token_get("core.Double.str");
+    core_cache.token_core_Double_hash = mvl->token_get("core.Double.hash");
+    core_cache.token_core_Double_isInt = mvl->token_get("core.Double.is_int");
+    core_cache.token_core_Double_canParse = mvl->token_get("core.Double.can_parse");
+    core_cache.token_core_Double_tryParse = mvl->token_get("core.Double.try_parse");
+    core_cache.token_core_Double_parse = mvl->token_get("core.Double.parse");
+    
+    core_cache.token_core_Double_mStr = mvl->token_get("core.Double$str");
+    core_cache.token_core_Double_mEquals = mvl->token_get("core.Double$equals");
+    core_cache.token_core_Double_mHash = mvl->token_get("core.Double$hash");
+    core_cache.token_core_Double_mGreaterThan = mvl->token_get("core.Double$greater_than");
+    core_cache.token_core_Double_mLessThan = mvl->token_get("core.Double$less_than");
+    core_cache.token_core_Double_mAdd = mvl->token_get("core.Double$add");
+    core_cache.token_core_Double_mSubtract = mvl->token_get("core.Double$subtract");
+    core_cache.token_core_Double_mMultiply = mvl->token_get("core.Double$multiply");
+    core_cache.token_core_Double_mDivide = mvl->token_get("core.Double$divide");
+    core_cache.token_core_Double_mNegate = mvl->token_get("core.Double$negate");
 
     core_cache.token_core_String = mvl->token_get("core.String");
     core_cache.token_core_String_new = mvl->token_get("core.String.new");
-    core_cache.token_core_String_getVal = mvl->token_get("core.String.getVal");
+    core_cache.token_core_String_getVal = mvl->token_get("core.String.get_val");
 
     core_cache.token_core_List = mvl->token_get("core.List");
     core_cache.token_core_List_new = mvl->token_get("core.List.new");
-    core_cache.token_core_List_getVal = mvl->token_get("core.List.getVal");
+    core_cache.token_core_List_getVal = mvl->token_get("core.List.get_val");
     core_cache.token_core_List_get = mvl->token_get("core.List.get");
     core_cache.token_core_List_length = mvl->token_get("core.List.length");
 
@@ -143,10 +181,10 @@ inline void core_init_tokens(mvl_library_api* mvl)
 
     core_cache.token_core_NativeFunction = mvl->token_get("core.NativeFunction");
     core_cache.token_core_NativeFunction_new = mvl->token_get("core.NativeFunction.new");
-    core_cache.token_core_NativeFunction_getToken = mvl->token_get("core.NativeFunction.getToken");
-    core_cache.token_core_NativeFunction_getNativeFunction = mvl->token_get("core.NativeFunction.getNativeFunction");
-    core_cache.token_core_NativeFunction_getSignature = mvl->token_get("core.NativeFunction.getSignature");
-    core_cache.token_core_NativeFunction_getHelpText = mvl->token_get("core.NativeFunction.getHelpText");
+    core_cache.token_core_NativeFunction_getToken = mvl->token_get("core.NativeFunction.get_token");
+    core_cache.token_core_NativeFunction_getNativeFunction = mvl->token_get("core.NativeFunction.get_native_function");
+    core_cache.token_core_NativeFunction_getSignature = mvl->token_get("core.NativeFunction.get_signature");
+    core_cache.token_core_NativeFunction_getHelpText = mvl->token_get("core.NativeFunction.get_help_text");
 }
 
 inline void core_init_libraryFunctions()
@@ -156,13 +194,17 @@ inline void core_init_libraryFunctions()
     core_cache.none_hash = core_cache.mvl->libraryFunction_get(core_cache.token_core_None_hash);
 
     core_cache.bool_new = core_cache.mvl->libraryFunction_get(core_cache.token_core_Bool_new);
+    core_cache.bool_getVal = core_cache.mvl->libraryFunction_get(core_cache.token_core_Bool_getVal);
     core_cache.bool_str = core_cache.mvl->libraryFunction_get(core_cache.token_core_Bool_str);
     core_cache.bool_hash = core_cache.mvl->libraryFunction_get(core_cache.token_core_Bool_hash);
-    core_cache.bool_getVal = core_cache.mvl->libraryFunction_get(core_cache.token_core_Bool_getVal);
-
+    
     core_cache.double_new = core_cache.mvl->libraryFunction_get(core_cache.token_core_Double_new);
     core_cache.double_getVal = core_cache.mvl->libraryFunction_get(core_cache.token_core_Double_getVal);
-
+    core_cache.double_str = core_cache.mvl->libraryFunction_get(core_cache.token_core_Double_str);
+    core_cache.double_hash = core_cache.mvl->libraryFunction_get(core_cache.token_core_Double_hash);
+    core_cache.double_isInt = core_cache.mvl->libraryFunction_get(core_cache.token_core_Double_isInt);
+    core_cache.double_canParse = core_cache.mvl->libraryFunction_get(core_cache.token_core_Double_canParse);
+    core_cache.double_tryParse = core_cache.mvl->libraryFunction_get(core_cache.token_core_Double_tryParse);
 
     core_cache.string_new = core_cache.mvl->libraryFunction_get(core_cache.token_core_String_new);
     core_cache.string_getVal = core_cache.mvl->libraryFunction_get(core_cache.token_core_String_getVal);
