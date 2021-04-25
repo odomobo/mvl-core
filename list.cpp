@@ -89,13 +89,13 @@ mvl_data CALL_CONVENTION list_getVal_libraryFunction(mvl_data self, mvl_data len
     if (length_out.size_out != nullptr)
         *length_out.size_out = length;
 
-    for (size_t i = 0; i < length; i++)
-        mvl->internalReference_increment(native_data->data[i]);
+    // don't increment internal reference for items; they haven't been accessed yet, and the
+    // self object must have an internal reference set.
 
     return mvl_obj_array_val(native_data->data.data());
 }
 
-// mvl_obj_val getVal(mvl_obj_val self, size_val index,...)
+// mvl_obj_val get(mvl_obj_val self, size_val index,...)
 // Assumes self is core.List
 // Assumes that self is long enough that "index" is a valid index.
 mvl_data CALL_CONVENTION list_get_libraryFunction(mvl_data self, mvl_data index, mvl_data c, mvl_data d)
@@ -118,11 +118,14 @@ mvl_data CALL_CONVENTION list_length_libraryFunction(mvl_data self, mvl_data ind
 // Method Functions //
 //////////////////////
 
-static bool check_list_self(mvl_obj* obj)
+static bool check_list(mvl_obj* obj, char const* name)
 {
     bool is_list = mvl->typeof(obj) == core_cache.token_core_List;
     if (!is_list)
-        mvl->error("self is not type core.List");
+    {
+        std::string message = std::string{ name } + " is not type core.List; instead it was " + std::string{ mvl->token_toString(mvl->typeof(obj)) };
+        mvl->error(message.c_str());
+    }
 
     return is_list;
 }
@@ -133,7 +136,9 @@ mvl_obj* CALL_CONVENTION list_length(mvl_obj* args)
     if (mvl->is_error())
         return nullptr;
 
-    if (!check_list_self(self))
+    defer (mvl->internalReference_decrement(self));
+
+    if (!check_list(self, "self"))
         return nullptr;
 
     size_t length = core_list_length(self);

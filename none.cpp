@@ -41,7 +41,10 @@ static bool check_none_self(mvl_obj* obj)
 {
     bool is_none = mvl->typeof(obj) == core_cache.token_core_None;
     if (!is_none)
-        mvl->error("self is not type core.None");
+    {
+        std::string message = "self is not type core.None; instead it was " + std::string{ mvl->token_toString(mvl->typeof(obj)) };
+        mvl->error(message.c_str());
+    }
 
     return is_none;
 }
@@ -51,6 +54,8 @@ mvl_obj* CALL_CONVENTION none_str(mvl_obj* args)
     auto self = extract_1_args(args);
     if (mvl->is_error())
         return nullptr;
+
+    defer (mvl->internalReference_decrement(self));
 
     if (!check_none_self(self))
         return nullptr;
@@ -66,6 +71,9 @@ mvl_obj* CALL_CONVENTION none_equals(mvl_obj* args)
     if (mvl->is_error())
         return nullptr;
 
+    defer (mvl->internalReference_decrement(self));
+    defer (mvl->internalReference_decrement(other));
+
     if (!check_none_self(self))
         return nullptr;
 
@@ -78,6 +86,8 @@ mvl_obj* CALL_CONVENTION none_hash(mvl_obj* args)
     auto self = extract_1_args(args);
     if (mvl->is_error())
         return nullptr;
+
+    defer (mvl->internalReference_decrement(self));
 
     if (!check_none_self(self))
         return nullptr;
