@@ -265,6 +265,7 @@ inline bool core_bool_getVal(mvl_obj* self)
 }
 
 // assumes self is of type core.Bool
+// returns a reference to a const string, which doesn't need to be freed
 inline char const* core_bool_str(mvl_obj* self)
 {
     return core_cache.bool_str(mvl_obj_val(self), unused(), unused(), unused()).const_string_val;
@@ -289,6 +290,33 @@ inline mvl_obj* core_double_new(double d)
 inline double core_double_getVal(mvl_obj* self)
 {
     return core_cache.double_getVal(mvl_obj_val(self), unused(), unused(), unused()).double_val;
+}
+
+// assumes self is of type core.Double
+// passes ownership of the string to the caller
+inline char* core_double_str(mvl_obj* self, size_t* length_out)
+{
+    return core_cache.double_str(mvl_obj_val(self), size_out(length_out), unused(), unused()).string_val;
+}
+
+// assumes self is of type core.Double
+inline uint64_t core_double_hash(mvl_obj* self)
+{
+    return core_cache.double_hash(mvl_obj_val(self), unused(), unused(), unused()).uint64_val;
+}
+
+// assumes self is of type core.Double
+inline bool core_double_isInt(mvl_obj* self)
+{
+    return core_cache.double_isInt(mvl_obj_val(self), unused(), unused(), unused()).bool_val;
+}
+
+// If parsing is successful, obj_out will be a core.Double.
+// If length is 0, then it will be calculated with strlen().
+// If val_out is NULL, then it won't be set.
+inline bool core_double_tryParse(char const* str, size_t length, double* val_out)
+{
+    return core_cache.double_isInt(const_string_val(str), size_val(length), double_out(val_out), unused()).bool_val;
 }
 
 ////////////////////////////////

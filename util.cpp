@@ -108,7 +108,7 @@ bool check_type(mvl_obj* obj, char const* arg_name, mvl_token type)
     bool is_type = mvl->typeof(obj) == type;
     if (!is_type)
     {
-        std::string message = "Argument \"" + std::string{ arg_name } + "\" was expected to be of type " + std::string{ mvl->token_toString(type) } + "; instead it was " + std::string{ mvl->token_toString(mvl->typeof(obj)) };
+        std::string message = std::string{ "Argument \"" } + arg_name + "\" was expected to be of type " + mvl->token_toString(type) + "; instead it was " + mvl->token_toString(mvl->typeof(obj));
         mvl->error(message.c_str());
     }
 

@@ -52,6 +52,7 @@ mvl_data CALL_CONVENTION double_hash_libraryFunction(mvl_data self, mvl_data b, 
     double val = mvl->object_getData(self.mvl_obj_val).double_val;
     std::hash<double> double_hash;
     auto ret = double_hash(val);
+    ret = ret % (1ULL << 53); // 2^53 is biggest consecutive whole number representable by IEEE double.
     return uint64_val(ret);
 }
 
@@ -66,8 +67,9 @@ mvl_data CALL_CONVENTION double_isInt_libraryFunction(mvl_data self, mvl_data b,
     return bool_val(floating_part == 0);
 }
 
-// bool_val tryParse(const_string_val str [, size_val length ], mvl_obj_out double_out, ...)
-// if length is 0, it's calculated with strlen()
+// bool_val tryParse(const_string_val str [, size_val length ] [, mvl_obj_out double_out] , ...)
+// If length is 0, it's calculated with strlen()
+// If double_out is NULL, then it won't be set.
 mvl_data CALL_CONVENTION double_tryParse_libraryFunction(mvl_data str, mvl_data length, mvl_data double_out, mvl_data d)
 {
     auto str_val = str.const_string_val;
@@ -88,7 +90,9 @@ mvl_data CALL_CONVENTION double_tryParse_libraryFunction(mvl_data str, mvl_data 
         return bool_val(false);
 
     // if we consumed an entire non-trivial string, then I guess we succeeded
-    *double_out.double_out = double_val;
+    if (double_out.double_out != nullptr)
+        *double_out.double_out = double_val;
+
     return bool_val(true);
 }
 
@@ -112,7 +116,8 @@ mvl_obj* CALL_CONVENTION double_str_nativeFunction(mvl_obj* args)
     if (!check_double(self, "self"))
         return nullptr;
 
-    throw std::exception{};
+    auto str = std::to_string(core_double_getVal(self));
+    return core_string_new(str);
 }
 
 mvl_obj* CALL_CONVENTION double_equals_nativeFunction(mvl_obj* args)
@@ -127,7 +132,12 @@ mvl_obj* CALL_CONVENTION double_equals_nativeFunction(mvl_obj* args)
     if (!check_double(self, "self"))
         return nullptr;
 
-    throw std::exception{};
+    bool other_is_double = mvl->typeof(other) == core_cache.token_core_Double;
+    if (!other_is_double)
+        return core_bool_new(false);
+
+    bool val = core_double_getVal(self) == core_double_getVal(other);
+    return core_bool_new(val);
 }
 
 mvl_obj* CALL_CONVENTION double_hash_nativeFunction(mvl_obj* args)
@@ -141,7 +151,8 @@ mvl_obj* CALL_CONVENTION double_hash_nativeFunction(mvl_obj* args)
     if (!check_double(self, "self"))
         return nullptr;
 
-    throw std::exception{};
+    auto hash = core_double_hash(self);
+    return core_double_new(static_cast<double>(hash));
 }
 
 mvl_obj* CALL_CONVENTION double_greaterThan_nativeFunction(mvl_obj* args)
@@ -156,7 +167,8 @@ mvl_obj* CALL_CONVENTION double_greaterThan_nativeFunction(mvl_obj* args)
     if (!check_double(self, "self") || !check_double(other, "other"))
         return nullptr;
 
-    throw std::exception{};
+    auto val = core_double_getVal(self) > core_double_getVal(other);
+    return core_bool_new(val);
 }
 
 mvl_obj* CALL_CONVENTION double_lessThan_nativeFunction(mvl_obj* args)
@@ -171,7 +183,8 @@ mvl_obj* CALL_CONVENTION double_lessThan_nativeFunction(mvl_obj* args)
     if (!check_double(self, "self") || !check_double(other, "other"))
         return nullptr;
 
-    throw std::exception{};
+    auto val = core_double_getVal(self) < core_double_getVal(other);
+    return core_bool_new(val);
 }
 
 mvl_obj* CALL_CONVENTION double_add_nativeFunction(mvl_obj* args)
@@ -186,7 +199,8 @@ mvl_obj* CALL_CONVENTION double_add_nativeFunction(mvl_obj* args)
     if (!check_double(self, "self") || !check_double(other, "other"))
         return nullptr;
 
-    throw std::exception{};
+    auto val = core_double_getVal(self) + core_double_getVal(other);
+    return core_double_new(val);
 }
 
 mvl_obj* CALL_CONVENTION double_subtract_nativeFunction(mvl_obj* args)
@@ -201,7 +215,8 @@ mvl_obj* CALL_CONVENTION double_subtract_nativeFunction(mvl_obj* args)
     if (!check_double(self, "self") || !check_double(other, "other"))
         return nullptr;
 
-    throw std::exception{};
+    auto val = core_double_getVal(self) - core_double_getVal(other);
+    return core_double_new(val);
 }
 
 mvl_obj* CALL_CONVENTION double_multiply_nativeFunction(mvl_obj* args)
@@ -216,7 +231,8 @@ mvl_obj* CALL_CONVENTION double_multiply_nativeFunction(mvl_obj* args)
     if (!check_double(self, "self") || !check_double(other, "other"))
         return nullptr;
 
-    throw std::exception{};
+    auto val = core_double_getVal(self) * core_double_getVal(other);
+    return core_double_new(val);
 }
 
 mvl_obj* CALL_CONVENTION double_divide_nativeFunction(mvl_obj* args)
@@ -231,7 +247,8 @@ mvl_obj* CALL_CONVENTION double_divide_nativeFunction(mvl_obj* args)
     if (!check_double(self, "self") || !check_double(other, "other"))
         return nullptr;
 
-    throw std::exception{};
+    auto val = core_double_getVal(self) / core_double_getVal(other);
+    return core_double_new(val);
 }
 
 mvl_obj* CALL_CONVENTION double_negate_nativeFunction(mvl_obj* args)
@@ -245,7 +262,8 @@ mvl_obj* CALL_CONVENTION double_negate_nativeFunction(mvl_obj* args)
     if (!check_double(self, "self"))
         return nullptr;
 
-    throw std::exception{};
+    auto val = -core_double_getVal(self);
+    return core_double_new(val);
 }
 
 mvl_obj* CALL_CONVENTION double_isInt_nativeFunction(mvl_obj* args)
@@ -259,7 +277,8 @@ mvl_obj* CALL_CONVENTION double_isInt_nativeFunction(mvl_obj* args)
     if (!check_double(d, "d"))
         return nullptr;
 
-    throw std::exception{};
+    auto val = core_double_isInt(d);
+    return core_bool_new(val);
 }
 
 mvl_obj* CALL_CONVENTION double_canParse_nativeFunction(mvl_obj* args)
@@ -273,7 +292,11 @@ mvl_obj* CALL_CONVENTION double_canParse_nativeFunction(mvl_obj* args)
     if (!check_type(s, "s", core_cache.token_core_String))
         return nullptr;
 
-    throw std::exception{};
+    size_t length;
+    auto str = core_string_getVal(s, &length);
+
+    auto val = core_double_tryParse(str, length, nullptr);
+    return core_bool_new(val);
 }
 
 mvl_obj* CALL_CONVENTION double_parse_nativeFunction(mvl_obj* args)
@@ -287,7 +310,19 @@ mvl_obj* CALL_CONVENTION double_parse_nativeFunction(mvl_obj* args)
     if (!check_type(s, "s", core_cache.token_core_String))
         return nullptr;
 
-    throw std::exception{};
+    size_t length;
+    auto str = core_string_getVal(s, &length);
+
+    double ret;
+    auto success = core_double_tryParse(str, length, &ret);
+    if (!success)
+    {
+        std::string error_message = std::string{ "Could not parse \"" } + std::string{ str, length } + "\" as a double.";
+        mvl->error(error_message.c_str());
+        return nullptr;
+    }
+
+    return core_double_new(ret);
 }
 
 ////////////////////////////
