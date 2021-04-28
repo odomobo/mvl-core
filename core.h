@@ -311,9 +311,10 @@ inline bool core_double_isInt(mvl_obj* self)
     return core_cache.double_isInt(mvl_obj_val(self), unused(), unused(), unused()).bool_val;
 }
 
-// If parsing is successful, obj_out will be a core.Double.
+// If parsing is successful, val_out will be set to the parsed value.
 // If length is 0, then it will be calculated with strlen().
 // If val_out is NULL, then it won't be set.
+// TODO: should this pass out a double or a core.Double?
 inline bool core_double_tryParse(char const* str, size_t length, double* val_out)
 {
     return core_cache.double_isInt(const_string_val(str), size_val(length), double_out(val_out), unused()).bool_val;

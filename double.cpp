@@ -67,10 +67,11 @@ mvl_data CALL_CONVENTION double_isInt_libraryFunction(mvl_data self, mvl_data b,
     return bool_val(floating_part == 0);
 }
 
-// bool_val tryParse(const_string_val str [, size_val length ] [, mvl_obj_out double_out] , ...)
+// bool_val tryParse(const_string_val str [, size_val length ] [, double_out val_out] , ...)
 // If length is 0, it's calculated with strlen()
-// If double_out is NULL, then it won't be set.
-mvl_data CALL_CONVENTION double_tryParse_libraryFunction(mvl_data str, mvl_data length, mvl_data double_out, mvl_data d)
+// If val_out is NULL, then it won't be set.
+// TODO: should this pass out a double or a core.Double?
+mvl_data CALL_CONVENTION double_tryParse_libraryFunction(mvl_data str, mvl_data length, mvl_data val_out, mvl_data d)
 {
     auto str_val = str.const_string_val;
 
@@ -90,8 +91,8 @@ mvl_data CALL_CONVENTION double_tryParse_libraryFunction(mvl_data str, mvl_data 
         return bool_val(false);
 
     // if we consumed an entire non-trivial string, then I guess we succeeded
-    if (double_out.double_out != nullptr)
-        *double_out.double_out = double_val;
+    if (val_out.double_out != nullptr)
+        *val_out.double_out = double_val;
 
     return bool_val(true);
 }
